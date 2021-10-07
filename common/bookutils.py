@@ -88,6 +88,7 @@ def parse_data_file(bookinput_filepath):
         lines = f.readlines()
 
         found_title = False
+        chap_num_counter = 1
         for i, line in enumerate(lines):   
             line = line.strip() # make sure this is before check for empty line!
             if not line or line.startswith("#"):
@@ -112,11 +113,12 @@ i.e. :myChap:/filepath/file.txt)''').format(i, bookinput_filepath))
                 chapname = parse_line[1]
                 filepath = parse_line[2]
                 if not chapnum:
-                    chapnum = str(i + 1)
+                    chapnum = str(chap_num_counter)
                 if not os.path.isabs(filepath):
                     filedir = os.path.dirname(bookinput_filepath)
                     filepath = os.path.abspath(os.path.join(filedir, filepath))
                 chapter_data.append([chapnum, chapname, filepath])
+                chap_num_counter += 1
 
     return title, chapter_data
 
