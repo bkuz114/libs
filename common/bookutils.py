@@ -6,6 +6,10 @@ import re
 
 ENC = 'utf-8'
 
+# a generic BeautifulSoup object to use throughtout script
+# for basic functions
+SOUP = BeautifulSoup("", 'html.parser')
+
 '''
 Copies a folder and all contents
 into another folder, overwriting existing
@@ -172,3 +176,33 @@ Solutions:\n
     wr.write(str(soup))
     wr.close()
     return output_filename
+
+'''
+takes ABS PATH to a text file.
+Extracts data and converts in to BeautifulSoup
+HTML with <p> tags for each chapter.
+'''
+def get_chapter_as_div(filepath):
+    print(("\t\tbookutils: Parse chapter file {}").format(filepath))
+
+    if not os.path.isabs(filepath):
+        sys.exit(("ERROR: filepath to chapter file ({}) is not absolute!").format(filepath))
+
+    chapter_div = SOUP.new_tag("div")
+    if os.path.exists(filepath):
+
+        with open(filepath, 'r', encoding=ENC) as f: # readonly mode
+            lines = f.readlines()
+            # go through and create <p> tags at each newline
+            para_tag = SOUP.new_tag("p")
+            for i, line in enumerate(lines):
+                line = line.strip()
+                para_tag.append(line)
+                if not line or i == len(lines) - 1:
+                    # got to end of paragraph.
+                    chapter_div.append(para_tag)
+                    para_tag = SOUP.new_tag("p")
+    else:
+        sys.exit(("Error! Chapter file {} does not exist!").format(filepath))
+
+    return chapter_div
