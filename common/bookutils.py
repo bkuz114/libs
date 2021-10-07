@@ -29,22 +29,24 @@ def copy_folder_recursively(src, dest):
         sys.exit("ERROR: bookutils: can't copy folder - either src or dest is not absolute!")
 
     src_dir = src
-    print("src dir: " + src_dir)
     # need to get top level folder name to construct dest path
     # (i.e. if 'a/b/c' want 'c')
     # os.path.basename will return empty string if path ends in '/' char
     # so strip it off if its there
     if src_dir.endswith("/"):
         src_dir = ASSETS_DIR[:-1] # strips off last char of string
-    print("src dir: " + src_dir)
+
     src_foldername = os.path.basename(src_dir)
     dest_dir = os.path.abspath(os.path.join(dest, src_foldername))
-    print("dest dir: " + dest_dir)
-    print(("Copy {} to {}").format(src_dir, dest_dir))
-    # shutil will fail if the dest dir exists
-    #shutil.copytree(src_dir, dest_dir)
-    # https://stackoverflow.com/questions/10047521/how-to-copy-directory-with-all-file-from-c-xxx-yyy-to-c-zzz-in-python/17358075
-    distutils.dir_util.copy_tree(src_dir, dest_dir)
+
+    # check if src and dest are same (distutils will fail if they are)
+    if src_dir == dest_dir:
+        print("\t\tbookutils: src and dest folder are same... skip")
+    else:
+        # shutil will fail if the dest dir exists
+        #shutil.copytree(src_dir, dest_dir)
+        # https://stackoverflow.com/questions/10047521/how-to-copy-directory-with-all-file-from-c-xxx-yyy-to-c-zzz-in-python/17358075
+        distutils.dir_util.copy_tree(src_dir, dest_dir)
 
 '''
 Takes an abs path to a data file for a book,
@@ -147,7 +149,7 @@ fails if not an abs path.
 '''
 def write_soup_to_file(soup, output_filename, force):
     # write to html
-    print(("\tbookutils: Prettify soup...").format(output_filename))
+    print(("\t\tbookutils: Prettify soup...").format(output_filename))
     soup.prettify(formatter='html')
 
     if not os.path.isabs(output_filename):
@@ -168,10 +170,10 @@ Solutions:\n
         os.makedirs(basedir)
 
     if force:
-        print(("\tbookutils: Write file {} ('force' given; overwrite existing)...").format(output_filename))
+        print(("\t\tbookutils: Write file {} ('force' given; overwrite existing)...").format(output_filename))
         wr = open(output_filename, "w", encoding=ENC)
     else:
-        print(("\tbookutil: Write file {} ...").format(output_filename))
+        print(("\t\tbookutils: Write file {} ...").format(output_filename))
         wr = open(output_filename, "x", encoding=ENC)
     wr.write(str(soup))
     wr.close()
