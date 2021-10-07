@@ -143,7 +143,8 @@ fails if not an abs path.
 '''
 def write_soup_to_file(soup, output_filename, force):
     # write to html
-    soup = soup.prettify(formatter='html')
+    print(("\tbookutils: Prettify soup...").format(output_filename))
+    soup.prettify(formatter='html')
 
     if not os.path.isabs(output_filename):
         sys.exit("ERROR: 'write_soup_to_file' - output_filename is not absolute!")
