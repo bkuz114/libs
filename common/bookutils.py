@@ -3,12 +3,22 @@ import sys
 from bs4 import BeautifulSoup
 import distutils.dir_util
 import re
+import datetime
 
 ENC = 'utf-8'
 
 # a generic BeautifulSoup object to use throughtout script
 # for basic functions
 SOUP = BeautifulSoup("", 'html.parser')
+
+'''
+Generate a timestamp string with no spaces
+'''
+def timestamp():
+    # format the datetime without any spaces
+    fmt = "%Y_%m_%d-%H_%M_%S"
+    ct = datetime.datetime.now().strftime(fmt)
+    return str(ct)
 
 '''
 Copies a folder and all contents
