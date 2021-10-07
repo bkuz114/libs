@@ -9,6 +9,7 @@ ENC = 'utf-8'
 '''
 Copies a folder and all contents
 into another folder, overwriting existing
+(src and dest paths must be absolute)
 
 Example:
 if you have folder /a/b/c/
@@ -19,6 +20,10 @@ results in:
     /a/d/e/f/c/
 '''
 def copy_folder_recursively(src, dest):
+    print(("\t\tbookutils: cp folder {} --> {}").format(src, dest))
+    if not os.path.isabs(src) or not os.path.isabs(dest):
+        sys.exit("ERROR: bookutils: can't copy folder - either src or dest is not absolute!")
+
     src_dir = src
     print("src dir: " + src_dir)
     # need to get top level folder name to construct dest path
@@ -114,7 +119,9 @@ Get contents of a text file as a string
 and return the string
 '''
 def get_file_as_str(filepath):
-    print(("\t\tRead file: {}").format(filepath))
+    print(("\t\tbookutils: Read file: {}").format(filepath))
+    if not os.path.isabs(filepath):
+        sys.exit(("ERROR: bookutils: can't read {}, path is not absolute!").format(filepath))
     html_file = open(filepath, "r", encoding=ENC)
     html_as_str = html_file.read()
     html_file.close()
