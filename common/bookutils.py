@@ -1,9 +1,11 @@
 import os
 import sys
 from bs4 import BeautifulSoup
-import distutils.dir_util
 import re
 import datetime
+
+# other py files in this common lib
+import io_utils
 
 ENC = 'utf-8'
 
@@ -19,44 +21,6 @@ def timestamp():
     fmt = "%Y_%m_%d-%H_%M_%S"
     ct = datetime.datetime.now().strftime(fmt)
     return str(ct)
-
-'''
-Copies a folder and all contents
-into another folder, overwriting existing
-(src and dest paths must be absolute)
-
-Example:
-if you have folder /a/b/c/
-and you want to copy 'c' and contents to
-path /a/d/e/f/,
-  copy_folder_recursively('a/b/c/', 'a/d/e/f/')
-results in:
-    /a/d/e/f/c/
-'''
-def copy_folder_recursively(src, dest):
-    print(("\t\tbookutils: cp folder {} --> {}").format(src, dest))
-    if not os.path.isabs(src) or not os.path.isabs(dest):
-        sys.exit("ERROR: bookutils: can't copy folder - either src or dest is not absolute!")
-
-    src_dir = src
-    # need to get top level folder name to construct dest path
-    # (i.e. if 'a/b/c' want 'c')
-    # os.path.basename will return empty string if path ends in '/' char
-    # so strip it off if its there
-    if src_dir.endswith("/"):
-        src_dir = ASSETS_DIR[:-1] # strips off last char of string
-
-    src_foldername = os.path.basename(src_dir)
-    dest_dir = os.path.abspath(os.path.join(dest, src_foldername))
-
-    # check if src and dest are same (distutils will fail if they are)
-    if src_dir == dest_dir:
-        print("\t\tbookutils: src and dest folder are same... skip")
-    else:
-        # shutil will fail if the dest dir exists
-        #shutil.copytree(src_dir, dest_dir)
-        # https://stackoverflow.com/questions/10047521/how-to-copy-directory-with-all-file-from-c-xxx-yyy-to-c-zzz-in-python/17358075
-        distutils.dir_util.copy_tree(src_dir, dest_dir)
 
 '''
 Takes an abs path to a data file for a book,
@@ -133,19 +97,6 @@ i.e. :myChap:/filepath/file.txt)''').format(i, bookinput_filepath))
     return title, chapter_data
 
 '''
-Get contents of a text file as a string
-and return the string
-'''
-def get_file_as_str(filepath):
-    print(("\t\tbookutils: Read file: {}").format(filepath))
-    if not os.path.isabs(filepath):
-        sys.exit(("ERROR: bookutils: can't read {}, path is not absolute!").format(filepath))
-    html_file = open(filepath, "r", encoding=ENC)
-    html_as_str = html_file.read()
-    html_file.close()
-    return html_as_str
-
-'''
 return a BeautifulSoup object
 given a strong of html data
 '''
@@ -154,42 +105,14 @@ def make_soup(html_str):
     return soup
 
 '''
-take a BeautifulSoup object an an abs path
-and writes to an html file
-at the specified path
-fails if not an abs path.
+Prettifies BeautifulSoup html and writes
+to output file.
+output_filename should be abs path
 '''
 def write_soup_to_file(soup, output_filename, force):
-    # write to html
-    print(("\t\tbookutils: Prettify soup...").format(output_filename))
-    soup = soup.prettify(formatter='html')
-
-    if not os.path.isabs(output_filename):
-        sys.exit("ERROR: 'write_soup_to_file' - output_filename is not absolute!")
-
-    if os.path.exists(output_filename) and not force:
-        sys.exit(('''\n
-ERROR! An output file, {}, already exists!
-Solutions:\n
-\t1. Specify different output dir using --output\n
-\t2. Give --timestamp flag\n
-\t3. Give --FORCE option (will overwrite existing files, be careful''').format(output_filename))
-
-    # create dirs in path if they don't exist
-    basedir = os.path.dirname(output_filename)
-    if not os.path.exists(basedir):
-        print(("\t\tbookutils: Make dirs in path : {}").format(basedir))
-        os.makedirs(basedir)
-
-    if force:
-        print(("\t\tbookutils: Write file {} ('force' given; overwrite existing)...").format(output_filename))
-        wr = open(output_filename, "w", encoding=ENC)
-    else:
-        print(("\t\tbookutils: Write file {} ...").format(output_filename))
-        wr = open(output_filename, "x", encoding=ENC)
-    wr.write(str(soup))
-    wr.close()
-    return output_filename
+    print(("\t\tbookutils: Prettify soup and write to {}...").format(output_filename))
+    pretty_soup = soup.prettify(formatter='html')
+    io_utils.write_str_to_file(pretty_soup, output_filename, force)
 
 '''
 takes ABS PATH to a text file.
