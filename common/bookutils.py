@@ -115,6 +115,20 @@ def write_soup_to_file(soup, output_filename, force):
     io_utils.write_str_to_file(pretty_soup, output_filename, force)
 
 '''
+takes filepath to file,
+and returns a BeautifulSoup object
+for text in file
+'''
+def make_soup_from_file(filepath):
+    if not os.path.abspath(filepath):
+        sys.exit(("ERROR (bookutils) filepath to get soup from is not absolute {}").format(filepath))
+    if not os.path.exists(filepath):
+        sys.exit(("ERROR (bookutils) filepath to get soup from does not exist {}").format(filepath))
+    file_str = io_utils.get_file_as_str(filepath)
+    soup = make_soup(file_str)
+    return soup
+
+'''
 takes ABS PATH to a text file.
 Extracts data and converts in to BeautifulSoup
 HTML with <p> tags for each chapter.
