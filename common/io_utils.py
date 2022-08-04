@@ -1,6 +1,7 @@
 import os
 import sys
 import distutils.dir_util
+import shutil
 
 ENC = 'utf-8'
 
@@ -74,6 +75,8 @@ def copy_folder_recursively(src, dest):
     # check if src and dest are same (distutils will fail if they are)
     if not src_dir == dest_dir:
         # shutil will fail if the dest dir exists
-        #shutil.copytree(src_dir, dest_dir)
+        # update : FYI dirs_exist_ok corrects problem of existing dir, but using distutils now so just going to keep using
+        #shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
         # https://stackoverflow.com/questions/10047521/how-to-copy-directory-with-all-file-from-c-xxx-yyy-to-c-zzz-in-python/17358075
         distutils.dir_util.copy_tree(src_dir, dest_dir)
+        # distutils depracated? go back to shutil eventually?
