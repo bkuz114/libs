@@ -2,19 +2,31 @@ import sys
 import re
 
 '''
+Basic roman numeral <--> integer converter.
+Needed because roman py package fails on Windows.
+
+usage:
+    1. on cmd:
+        python roman_converter.py 5 --> prints V
+        python roman_converter.py X --> prints 10
+    2. in .py file
+        import roman_converter
+        roman_converter.int_to_roman(5) --> returns "V"
+        roman_converter.roman_to_int("X") --> returns 10
+
+----------------------
 int to roman:
     https://stackoverflow.com/questions/28777219/basic-program-to-convert-integer-to-roman-numerals
-
 roman to int:
     https://stackoverflow.com/questions/19308177/converting-roman-numerals-to-integers-in-python
-
 is_roman:
     https://dev.to/alexdjulin/a-python-regex-to-validate-roman-numerals-2g99
-
+is_digit:
+    https://stackoverflow.com/questions/28279732/how-to-type-negative-number-with-isdigit
 if all else fails:
     pip install roman
     https://pypi.org/project/roman/
-    (but it has an issue on Windows...)
+    (but it fails on Windows..., hence why I've made this)
 '''
 
 ROMAN = [
