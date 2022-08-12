@@ -1,4 +1,5 @@
 import datetime
+import re
 
 '''
 Generate a timestamp string with no spaces
