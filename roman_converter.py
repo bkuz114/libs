@@ -47,8 +47,22 @@ def is_roman(num):
 
     return False
 
+'''
+return True if n is an integer;
+False otherwise. (needed because
+python's isdigit() doesn't work
+for negative numbers)
+'''
+def is_digit(n):
+    try:
+        int(n) # throws err if number isn't digit
+        return True
+    except ValueError:
+        return  False
+
 def int_to_roman(number):
     if int(number) <= 0:
+        raise ValueError("Can't convert {} to roman numeral; there is no roman numeral for it".format(number))
         return None
 
     result = ""
@@ -59,7 +73,7 @@ def int_to_roman(number):
 
 def roman_to_int(s):
     if not is_roman(s):
-        return None
+        raise ValueError("{} is not a valid roman numeral".format(s))
 
     d = {'m': 1000, 'd': 500, 'c': 100, 'l': 50, 'x': 10, 'v': 5, 'i': 1}
     n = [d[i] for i in s.lower() if i in d]
@@ -68,7 +82,7 @@ def roman_to_int(s):
 def main(args):
     num = args[0]
     res = None
-    if num.isdigit():
+    if is_digit(num):
         res = int_to_roman(int(num))
     else:
         res = roman_to_int(num)
