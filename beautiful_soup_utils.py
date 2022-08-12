@@ -90,19 +90,15 @@ Warnings:
 def find_replace_str(soup, string, content, allow_empty=False):
     found = soup.find(string=re.compile(string))
     '''
-    soup.find with string arg
-    will return a NavigableString
-    for the ENTIRE string of the tag
-    that contains the string
-    (i.e. suppose you have
-    <h1>%TITLE% %NUMBER%</h1>
+    soup.find with string arg will return a NavigableString
+    for the ENTIRE string of the tag that contains the string
+    (i.e. suppose you have <h1>%TITLE% %NUMBER%</h1>
     soup.find(string=re.compile("%TITLE%"))
-    will return "%TITLE% %NUMBER%")
-    - if you were to directly replace_with
-    on the find result, you'll be replacing the
-    entire text of the tag,
-    not just the part of the string that matches.
-    Hence the logic below;
+       --> returns "%TITLE% %NUMBER%")
+    - if you were to directly replace_with on the find result,
+    you'll be replacing the entire text of the tag, not just
+    the part of the string that matches. Hence the loginc below:
+
     1. cast returned NavigableString to string
     2. cast content to replace with to string
     3. use standard string replace on 1.,
