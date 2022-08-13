@@ -46,8 +46,12 @@ def write_str_to_file(string, filepath, force):
 
 '''
 Takes abs path to <src> dir and <dest> dir, and
-cp -r <src> into <dest>
+cp -r <src> <dest>
 overwrites <dest>/<src> if exists
+
+Optional arg explode will explode the dir
+in to dest, i.e.
+cp -r <src>/. <dest>
 
 Example:
 if you have folder /a/b/c/
@@ -56,8 +60,11 @@ path /a/d/e/f/,
   copy_folder_recursively('a/b/c/', 'a/d/e/f/')
 results in:
     /a/d/e/f/c/
+  copy_folder_recursively('a/b/c/', a/d/e/f/', explode=True)
+results in
+    all contents of '/a/b/c/' copied directly in to a/d/e/f/
 '''
-def copy_folder_recursively(src, dest):
+def copy_folder_recursively(src, dest, explode=False):
     if not os.path.isabs(src) or not os.path.isabs(dest):
         sys.exit("ERROR: (io_utils): can't copy folder - either src or dest is not absolute!")
 
@@ -67,10 +74,13 @@ def copy_folder_recursively(src, dest):
     # os.path.basename will return empty string if path ends in '/' char
     # so strip it off if its there
     if src_dir.endswith("/"):
-        src_dir = ASSETS_DIR[:-1] # strips off last char of string
+        src_dir = src_dir[:-1] # strips off last char of string
 
     src_foldername = os.path.basename(src_dir)
-    dest_dir = os.path.abspath(os.path.join(dest, src_foldername))
+    dest_dir = dest
+    if not explode:
+        dest_dir = os.path.join(dest, src_foldername)
+    dest_dir = os.path.abspath(dest_dir)
 
     # check if src and dest are same (distutils will fail if they are)
     if not src_dir == dest_dir:
