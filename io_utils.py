@@ -150,18 +150,59 @@ def copy_folder_recursively(src, dest, explode=False):
         # distutils depracated? go back to shutil eventually?
 
 '''
-Return path to all immediate subdirs in a given directory
-Optional arg names will only return names of the dirs
+Return list of paths to all immediate files in a directory.
+Optional boolean arg names only returns names of the files (not full paths)
+
+Arguments:
+----------
+
+folder:
+    name of folder to list files in.
+    Does not need to be abspath.
+    if rel. path, should be be rel dir
+    where script that imported this script
+    is being called.
+    e.g.: script a.py in dir /a/b/c/ imports io_utils and calls
+    list_subdirs; you call a.py from /a/b/;
+    the rel path to 'folder' should be rel /a/b/
+
+names:
+    optional boolean. If True, only return names of the
+    files. If False, returns abs. paths to the files.
+
+throws exception if folder does not exist
+
+https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
+ (answer by gahooa)
+'''
+def list_files(folder, names=False):
+    files = []
+    if names:
+        files = [ f.name for f in os.scandir(folder) if f.is_file() ]
+    else:
+        files = [ f.path for f in os.scandir(folder) if f.is_file() ]
+    return files
+
+'''
+Return list of paths to all immediate subdirs in a directory.
+Optional boolean arg names only returns names of the dirs (not full paths)
+
+Arguments:
+----------
 
 folder:
     name of folder to get subdirs of.
     Does not need to be abspath.
-    if rel. path, should be be rel cwd
+    if rel. path, should be be rel dir
     where script that imported this script
     is being called.
-    ex: script a.py in dir /a/b/c/ imports io_utils and calls
+    e.g.: script a.py in dir /a/b/c/ imports io_utils and calls
     list_subdirs; you call a.py from /a/b/;
     the rel path to 'folder' should be rel /a/b/
+
+names:
+    optional boolean. If True, only return names of the
+    dirs. If False, returns abs. paths to the dirs.
 
 throws exception if folder does not exist
 
