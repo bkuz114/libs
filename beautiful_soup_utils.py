@@ -123,6 +123,36 @@ def replace_all_occurances_in_doc(soup, find, replace_with):
     for mmatch in matches:
         mmatch.replace_with(replace_with)
 
+'''
+add script tags to head of document
+from list of paths
+
+soup: BeautifulSoup4 object
+paths: list of Strings, which should be src urls to the script
+    if rel paths, make sure they are rel the HTML doc you're adding to,
+    for where its final location will be.
+
+** Note - this will append them to END of <head>; the order is important.
+   example - if you are adding a script which uses jquery, you'd need jquery
+   script tag to come before the script which relies on it.
+'''
+def add_js_head_tags(soup, paths):
+    for path in paths:
+        soup.head.append(BeautifulSoup('<script src="' + path + '"></script>', "html.parser"))
+
+'''
+add <link> tags to <head> of document
+from list of paths (would use this to add
+css files)
+
+soup: BeautifulSoup4 object
+paths: list of Strings, which should be paths to the css files
+  if giving rel paths, make sure they are rel the HTML doc you'd
+  be adding this to (where its final location will be)
+'''
+def add_css_head_tags(soup, paths):
+    for path in paths:
+        soup.head.append(BeautifulSoup('<link rel="stylesheet" href="' + path + '" type="text/css">', "html.parser"))
 
 '''
 Takes a String of (hopefully) valid HTML
