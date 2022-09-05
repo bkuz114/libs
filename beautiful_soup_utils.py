@@ -141,18 +141,56 @@ def add_js_head_tags(soup, paths):
         soup.head.append(BeautifulSoup('<script src="' + path + '"></script>', "html.parser"))
 
 '''
-add <link> tags to <head> of document
-from list of paths (would use this to add
-css files)
+adds css tags to <head> of document from a list
+of paths.
+Default behavior is to insert the new <link> tags
+after any last found <link> tag already in <head>
+(or append to end of <head> if there aren't any <link>
+tags currently), but the position to insert them at
+can be specified by optional startAt arg.
 
 soup: BeautifulSoup4 object
 paths: list of Strings, which should be paths to the css files
   if giving rel paths, make sure they are rel the HTML doc you'd
   be adding this to (where its final location will be)
+startAt:
+    optional int. after which existing <link> tag in <head>
+    do you want to start inserting the new paths;
+    ex: 0 : adds the paths at position 0 (i.e.,
+        at front of list of tags)
+        5: inserts the new script tags at position 5 (i.e,
+           before the 5t existing tag in <head>
+    default behavior is to add after last existing <link> tag in <head>
 '''
-def add_css_head_tags(soup, paths):
+def add_css_head_tags(soup, paths, startAt=None):
+    soup_head = soup.find("head")
+    if not soup_head:
+        raise Exception("no 'head' tag in soup sent to add_css_head_tag")
+
+    # make list of tags from list of paths
+    new_paths = BeautifulSoup("", 'html.parser')
     for path in paths:
-        soup.head.append(BeautifulSoup('<link rel="stylesheet" href="' + path + '" type="text/css">', "html.parser"))
+        new_paths.append(BeautifulSoup('<link rel="stylesheet" href="' + path + '" type="text/css">', "html.parser"))
+
+    # find last <link> tag in <head> and insert the new
+    # paths after that; if there aren't any <link> tags
+    # in <head>, append the new paths to end of <head>
+
+    link_tags = soup_head.find_all("link")
+    if not link_tags:
+        soup_head.append(new_paths)
+    else:
+        # default is insert after last <link> tag;
+        # but if startAt arg given, insert after that point
+        if startAt is not None: # 0 is valid so don't do if startAt or it won't catch if it's 0 
+            if not 0 <= startAt <= len(link_tags):
+                raise Exception("\nadd_css_head_tags: specified to start adding your new tags at pos {} of existing <link> tags, but there are only {} <link> tags in this soup's <head>. You must specify a number between 0 and {} (inclusive). (p.s. if you give {}, that would insert them at the end of the list of existing <link> tags, but this is the default behavior without the startAt args)".format(str(startAt), str(len(link_tags)), str(len(link_tags)), str(len(link_tags))))
+            if startAt == len(link_tags): # if they specified end of list, add at end of list
+                link_tags[-1].insert_after(new_paths)
+            else: # anything else, start at that position.
+                link_tags[startAt].insert_before(new_paths)
+        else:
+            link_tags[-1].insert_after(new_paths)
 
 '''
 Takes a String of (hopefully) valid HTML
