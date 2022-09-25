@@ -56,8 +56,13 @@ beautiful_soup_utils.add_classes(new_h1, ["mmmm"])
 print("soup after")
 print(bs)
 print(new_h1)
+print("try removing classes...")
+beautiful_soup_utils.remove_classes(new_h1, ["mmmm", "here2", "here1"])
+print("soup after")
+print(new_h1)
 
 # test out adding head tags
+print("----- add css head tags ----")
 paths = ["dummy1", "dummy2"]
 beautiful_soup_utils.add_css_head_tags(bs, paths)
 paths2 = ["dummy-ind1", "dummy-ind2"]

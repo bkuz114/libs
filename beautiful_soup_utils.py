@@ -48,6 +48,41 @@ def add_classes(tag, class_list):
         tag['class'] = class_list
 
 '''
+Removes css classes from a tag.
+
+Arguments:
+----------
+    tag:
+        BeautifulSoup object. The element you want to remove css classes from. 
+    class_list:
+        list of String. Each String is a css class to remove.
+        If the css class isn't found in tag it's OK.
+Returns:
+---------
+    None. The modifications to tag are permenant.
+'''
+def remove_classes(tag, class_list):
+    new_class_list = []
+    if 'class' in tag.attrs:
+        '''
+        BeautifulSoup tag's 'class' attr
+        could be either String or list
+        '''
+        curr_classes = tag['class']
+        if type(curr_classes) == type("string"):
+            # split existing class string to get a list
+            curr_classes_list = curr_classes.split(" ")
+        elif type(curr_classes) == type([]):
+            curr_classes_list = curr_classes
+        else:
+            raise Exception("BeautifulSoupUtils: remove_classes - class attr is neither String nor list; can't parse it!")
+
+        for myclass in curr_classes_list:
+            if myclass not in class_list:
+                new_class_list.append(myclass)
+            tag['class'] = new_class_list
+
+'''
 Replaces *first* occurance of a String in a BeautifulSoup object
 with some other content.
 Content can be either another String, or another BeautifulSoup object
