@@ -48,6 +48,27 @@ def add_classes(tag, class_list):
         tag['class'] = class_list
 
 '''
+Returns a list of Strings
+which are the classes in a BeautifulSoup tag
+'''
+def get_classes(tag):
+    classes = []
+    if 'class' in tag.attrs:
+        '''
+        BeautifulSoup tag's 'class' attr
+        could be either String or list
+        '''
+        curr_classes = tag['class']
+        if type(curr_classes) == type("string"):
+            # split existing class string to get a list
+            classes = curr_classes.split(" ")
+        elif type(curr_classes) == type([]):
+            classes = curr_classes
+        else:
+            raise Exception("BeautifulSoupUtils: get_classes - class attr is neither String nor list; can't parse it!")
+    return classes
+
+'''
 Removes css classes from a tag.
 
 Arguments:
