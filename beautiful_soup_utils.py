@@ -2,9 +2,47 @@ import os
 import copy
 import re
 import io_utils
+import bs4 # needed to typecheck objects i.e. bs4.element.Tag
 from bs4 import BeautifulSoup
 
 ENC = 'utf-8-sig'
+
+'''
+Returns nearset right sibling that is a Tag object
+(NOT a NavigableString object)
+If right siblings exhausted before it reaches
+a Tag, returns None
+
+Why this is needed:
+-------------------
+Needed because for things like:
+
+    <p>
+      <br/>
+      <hr class="inner anchor" id="inner-hr-1"/>
+      <br/>
+    </p>
+
+The left and right siblings of the <hr> Tag are
+actually \n chars that are NavigableStrings, not
+the <br> tags, as one might expect...
+'''
+def get_next_tag_sibling(soup_tag):
+    curr_tag = soup_tag
+    next_sib = None
+    while True:
+        next_sib = curr_tag.next_sibling
+        if isinstance(next_sib, bs4.element.Tag) or not next_sib: break
+        curr_tag = next_sib
+    return next_sib
+def get_prev_tag_sibling(soup_tag):
+    curr_tag = soup_tag
+    prev_sib = None
+    while True:
+        prev_sib = curr_tag.previous_sibling
+        if isinstance(prev_sib, bs4.element.Tag) or not prev_sib: break
+        curr_tag = prev_sib
+    return prev_sib
 
 '''
 adds a list of css classes to a BeautifulSoup tag.
