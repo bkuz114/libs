@@ -73,11 +73,23 @@ print(new_h1)
 # test out adding head tags
 print("----- add css head tags ----")
 paths = ["dummy1", "dummy2"]
+print("add css head tags: " + str(paths) + " (appends to END of <head> by default)")
 beautiful_soup_utils.add_css_head_tags(bs, paths)
-paths2 = ["dummy-ind1", "dummy-ind2"]
+paths2 = ["dummy-ind1", "./assets/dummy-ind2"]
+print("add css head tags: " + str(paths2) + " at index 0")
 beautiful_soup_utils.add_css_head_tags(bs, paths2, startAt=0)
-paths3 = ["dummy-ind-mid1", "dummy-ind-mid2"]
+paths3 = ["dummy-ind-mid1", "/here/dummy-ind-mid2"]
+print("add css head tags: " + str(paths3) + " at index 3")
 beautiful_soup_utils.add_css_head_tags(bs, paths3, startAt=3)
 
+# make some random tags and print them..
+print("---- Make some head tags for fun (these are NOT included anywhere in final file) ----")
+tags = {'js': ["./assets/tag1.js", "./assets/js/tag2.js"], 'css': ["./assets/css/tag1.css", "./assets/css/tag2.css"]}
+for tag_type in tags.keys():
+    for tag in tags[tag_type]:
+        print("Make a " + tag_type + " tag for path: " + tag)
+        print("\t{}".format(str(beautiful_soup_utils.head_tag(tag, tagType=tag_type))))
+
 # write this to file
+print("---- Tests over... write it to file... ---")
 beautiful_soup_utils.write_soup_to_file(bs, filepath_out, True) 
