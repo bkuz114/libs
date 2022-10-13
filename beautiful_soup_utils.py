@@ -11,6 +11,7 @@ ENC = 'utf-8-sig'
 returns True if an BeautifulSoup Tag
 has text in it, and False otherwise.
 (@TODO: Ensure this is a Tag object?)
+see https://stackoverflow.com/questions/61794102/how-to-remove-empty-p-tags-with-beautiful-soup-4
 '''
 def has_text_content(tag):
     if len(tag.get_text(strip=True)) == 0:
