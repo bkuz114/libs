@@ -90,6 +90,16 @@ for tag_type in tags.keys():
         print("Make a " + tag_type + " tag for path: " + tag)
         print("\t{}".format(str(beautiful_soup_utils.head_tag(tag, tagType=tag_type))))
 
+# test has_text_content method
+print(" --- text 'has_text_content' function ---")
+p_w_content = soup.new_tag("p")
+p_w_content.append("hello!")
+p_wo_content = soup.new_tag("p")
+test_tags = [p_w_content, p_wo_content]
+for test_tag in test_tags:
+    print("Next tag: " + str(test_tag))
+    print("Has content? " + str(beautiful_soup_utils.has_text_content(test_tag)))
+
 # write this to file
 print("---- Tests over... write it to file... ---")
 beautiful_soup_utils.write_soup_to_file(bs, filepath_out, True) 

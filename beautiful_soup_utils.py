@@ -8,6 +8,16 @@ from bs4 import BeautifulSoup
 ENC = 'utf-8-sig'
 
 '''
+returns True if an BeautifulSoup Tag
+has text in it, and False otherwise.
+(@TODO: Ensure this is a Tag object?)
+'''
+def has_text_content(tag):
+    if len(tag.get_text(strip=True)) == 0:
+        return False
+    return True
+
+'''
 Returns nearset right sibling that is a Tag object
 (NOT a NavigableString object)
 If right siblings exhausted before it reaches
