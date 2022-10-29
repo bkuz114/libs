@@ -150,6 +150,28 @@ def copy_folder_recursively(src, dest, explode=False):
         # distutils depracated? go back to shutil eventually?
 
 '''
+Takes a filepath (either path to a file, or path to a directory).
+If it's a file, creates parent directory recurisvely.
+If it's a directory, creates entire dirpath.
+returns True on success
+
+Ex:
+    createPath("a/b/c.txt") --> creates a/b/
+    createPath("a/b/c/d") --> creates a/b/c/d/
+Note: if the filepath already exists, it simply returns.
+'''
+def createPath(filepath):
+    if os.path.exists(filepath): return True
+    # doesn't exist. Make best guess if this is
+    # a dir of file (if no extension, assuming it's a dir.)
+    parentDir = filepath
+    if os.path.splitext(filepath)[-1]: # returns extension like .txt, or empty string if none
+        # get parent from filepath
+        parentDir = os.path.split(os.path.abspath(filepath))[0]
+    os.makedirs(parentDir, exist_ok=True) # exist_ok to True or will fail if exists
+    return True
+
+'''
 Return list of paths to all immediate files in a directory.
 Optional boolean arg names only returns names of the files (not full paths)
 
