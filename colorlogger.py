@@ -89,7 +89,21 @@ def setup(loglevel_console=logging.DEBUG, loglevel_logfile=logging.DEBUG, logfil
 
     # set basic configuration for root logger
     logging.basicConfig(
-            #level=logging.DEBUG,
+            '''
+            REGARDING SETTING THE LOG LEVEL FOR ROOT LOGGER::
+
+            you MUST set root logger's level, and set it as low as possible. Why:
+            - if not set, root logger's log level defaults to WARNING.
+            - .setLevel() calls on individual handlers are ignored if lower than the root logger's
+            (e.g. suppose you don't set root loggers level here;
+            it will get set to WARNING. Then suppose you set DEBUG
+            for a fileHandler's level; since that's lower than WARNING,
+            it will get ignored and default to the root logger's level (WARNING)
+            so essentially, if you want to set individual log levels on handlers,
+            make sure to set root logger's level and set it as low as possible.)
+            https://stackoverflow.com/questions/17668633/what-is-the-point-of-setlevel-in-a-python-logging-handler
+            '''
+            level=logging.DEBUG,
             #format='%(asctime)s,%(msecs)d %(levelname)s %(message)s (from file: %(name)s)',
             datefmt='%H:%M:%S',
             handlers=handlers
@@ -97,7 +111,6 @@ def setup(loglevel_console=logging.DEBUG, loglevel_logfile=logging.DEBUG, logfil
 
 def test():
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
     logger.debug("debug message")
     logger.info("info message")
     logger.warning("warning message")
