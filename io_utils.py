@@ -1,6 +1,5 @@
 import os
 import sys
-import distutils.dir_util
 import shutil
 
 ENC = 'utf-8'
@@ -87,10 +86,18 @@ assume_dir:
     See 'copy_file' function declaration
     for explanation.
     ** READ IT - IT'S NOT OBVIOUS **
+glob_ignore:
+    (only used when path is a directory)
+    list of Strings - glob patterns -
+    for files to ignore in the src directory
+    to ignore.
+    e.g. glob_ignore=["*.txt", "*.fs"]
+    when doing the copy of src, would ignore
+    any files with extensions .txt or .fs
 '''
 
 
-def copy_path(src, dest, force=False, explode=False, assume_dir=True):
+def copy_path(src, dest, force=False, explode=False, assume_dir=True, glob_ignore=[]):
     if not os.path.isabs(src) or not os.path.isabs(dest):
         raise Exception("ERROR io_utils:copy_path: "
                         "src or dest are not absolute")
@@ -99,7 +106,7 @@ def copy_path(src, dest, force=False, explode=False, assume_dir=True):
                          "src to copy doesn't exist! src: {}").format(src))
 
     if os.path.isdir(src):
-        copy_folder_recursively(src, dest, explode)
+        copy_folder_recursively(src, dest, explode, glob_ignore)
     elif os.path.isfile(src):
         copy_file(src, dest, force, assume_dir)
     else:
@@ -124,9 +131,9 @@ for expalatnions **
 '''
 
 
-def copy_paths(paths, dest, force=False, explode=False, assume_dir=True):
+def copy_paths(paths, dest, force=False, explode=False, assume_dir=True, glob_ignore=[]):
     for path in paths:
-        copy_path(path, dest, force, explode, assume_dir)
+        copy_path(path, dest, force, explode, assume_dir, glob_ignore)
 
 
 '''
@@ -294,6 +301,13 @@ Optional arg explode will explode the dir
 in to dest, i.e.
 cp -r <src>/. <dest>
 
+glob_ignore:
+    list of Strings: glob patterns for files
+    to ignore.
+    ex. glob_ignore=["*.txt", "*.fs"]
+    would ignore any files with extensions
+    .txt or .fs
+
 Example:
 if you have folder a/b/c
 and you want to copy 'c' and contents to
@@ -307,7 +321,7 @@ results in
 '''
 
 
-def copy_folder_recursively(src, dest, explode=False):
+def copy_folder_recursively(src, dest, explode=False, glob_ignore=[]):
     if not os.path.isabs(src) or not os.path.isabs(dest):
         sys.exit("ERROR (io_utils:copy_folder_recursively): "
                  "can't copy folder - either src or dest "
@@ -327,16 +341,18 @@ def copy_folder_recursively(src, dest, explode=False):
         dest_dir = os.path.join(dest, src_foldername)
     dest_dir = os.path.abspath(dest_dir)
 
-    # check if src and dest are same (distutils will fail if they are)
-    if not src_dir == dest_dir:
-        # shutil will fail if the dest dir exists
-        # update : FYI dirs_exist_ok corrects problem
-        # of existing dir, but using distutils now so
-        # just going to keep using
-        # shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
-        # https://stackoverflow.com/questions/10047521/how-to-copy-directory-with-all-file-from-c-xxx-yyy-to-c-zzz-in-python/17358075
-        distutils.dir_util.copy_tree(src_dir, dest_dir)
-        # distutils depracated? go back to shutil eventually?
+    '''
+    switching from distutils to shutil
+    so can specify glob patterns to ignore
+
+    Note: dirs_exist_ok = True or it will fail
+    if dest_dir exists
+
+    example of glob patterns to copytree:
+    https://docs.python.org/3/library/shutil.html#copytree-example
+    '''
+    shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns(*glob_ignore))
 
 
 '''
