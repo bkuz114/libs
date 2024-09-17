@@ -5,6 +5,106 @@ import shutil
 
 ENC = 'utf-8'
 
+
+'''
+copy a path (a file or folder)
+to a destination.
+
+determines if src is a file or folder
+and calls appropriate function
+(copy_file or copy_folder_recursively)
+see those functions for details on
+what they do.
+
+src:
+    String. absolute path of file or
+    folder to copy
+dest:
+    String. absolute path of destination
+    to copy to.
+    in case where src is a file:
+        dest can be either a file or a folder.
+        if a file, will copy src to that
+        filepath (i.e. cp src dest)
+        if folder, will copy src INTO the
+        folder.
+    in case where src is a folder:
+        dest must be a folder.
+        see function declaration for
+        'copy_folder_recursively' to see
+        how dest is handled (it will get
+        passed to that function as the dest
+        option)
+force:
+    (only used when path is a file)
+    boolean.
+    if both path and dest are files, and
+    dest file exists:
+    if force is True, will overwrite dest
+    with src.
+    if force is False, will fail.
+explode:
+    (only used when path is a directory)
+    boolean.
+    if True, explodes contents of path
+    directly into dest dir, rather than
+    copying
+    the source folder itself.
+    i.e. src = a/b/c, dest=d/e/f
+    if explode=True, the contents of
+    folder "c" get copied directly into
+    d/e/f
+    if explode=False, the folder "c"
+    itself gets copied info d/e/f
+    (so you end up with d/e/f/c)
+if_dest_not_exist_make_dir:
+    (only used when path is a file)
+    boolean.
+    See 'copy_file' function declaration
+    for explanation.
+    ** READ IT - IT'S NOT OBVIOUS **
+'''
+
+
+def copy_path(src, dest, force=False, explode=False, if_dest_not_exist_make_dir=True):
+    if not os.path.isabs(src) or not os.path.isabs(dest):
+        raise Exception("ERROR io_utils:copy_path: "
+                        "src or dest are not absolute")
+    if not os.path.exists(src):
+        raise Exception(("ERROR io_utils:copy_path: "
+                        "src to copy doesn't exist! src: {}").format(src))
+
+    if os.path.isdir(src):
+        copy_folder_recursively(src, dest, explode)
+    elif os.path.isfile(src):
+        copy_file(src, dest, force, if_dest_not_exist_make_dir)
+    else:
+        raise Exception(("ERROR io_utils:copy_path: "
+                        "src not file or dir according to python.. "
+                        "src: {}").format(src))
+
+
+'''
+copy list of paths (can be files
+or folders) to a destination.
+
+paths:
+    list of Strings.
+    Absolute paths of files or
+    directories to copy.
+
+** remaining options, see
+function declaration of 'copy_path'
+for expalatnions **
+
+'''
+
+
+def copy_paths(paths, dest, force=False, explode=False, if_dest_not_exist_make_dir=True):
+    for path in paths:
+        copy_path(path, dest, force, explode, if_dest_not_exist_make_dir)
+
+
 '''
 filepath: absolute path to a file.
 Reads text content and returns as String
@@ -44,34 +144,84 @@ def write_str_to_file(string, filepath, force):
     wr.write(string)
     wr.close()
 
+
 '''
-copies file at src to dest
-- if dest is an EXISTING dir, rather than a filepath,
-  creates file with identical basename as src in dest
-- makes any dirs in path to dest if they don't exist.
-- if you've give dest as a dirpath
-  (path has no file extension, like i.e. a/b/c/d)
-  but path doesn't yet exist, will assume you want to
-  copy to file called d - it will NOT take this as a dir
-  In such a case, create the dir you want before
-  calling this function, i.e.
-    os.makedirs(dest)
-    copy_file(src, dest)
-  would do this for you, but what if you really want to
-  copy to a file that's just bare with no extension?
+copy a file to a destination
+
+src:
+    String. absolute path of file to copy
+dest:
+    String. absolute path to copy to.
+    Can be either file or folder.
+    if file: will copy file to this location.
+    (if dest file already exists, will fail
+    unless Force=True)
+    if directory: will copy file into the
+    directory. Will create any directories
+    in path that don't exist
+force:
+    boolean
+    if dest is a file and file exists:
+    if force=True, will overwrist dest with src
+    if force=False, will fail with message.
+if_dest_not_exist_make_dir:
+    if dest doesn't exist, and no extension given,
+    there's no way to determine whether dest
+    intended as a directory or file (could be you
+    want it to be a file with no extension).
+    if this option is True, will assume you
+    intended for dest to be a folder and will
+    create it and then copy src into the folder.
+    else will assume it's meant to be a file
+    with no extension and will copy it to file
 
 ex: copy_file("a/b/c.txt", "a/b/d.txt")
-copies the files a/b/c.txt --> a/b/d.txt
+copies file a/b/c.txt to a/b/d.txt
 '''
-def copy_file(src, dest, force=False):
+
+
+def copy_file(src, dest, force=False, if_dest_not_exist_make_dir=True):
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise Exception("ERROR io_utils:copy_file: src or dest are not absolute")
+        raise Exception("ERROR io_utils:copy_file: "
+                        "src or dest are not absolute")
     if not os.path.exists(src):
-        raise Exception("ERROR io_utils:copy_file: src to copy doesn't exist! src: {}".format(src))
+        raise Exception("ERROR io_utils:copy_file: "
+                        "src file doesn't exist! src: {}".format(src))
     # fail if dest exists and isn't a dir
     if not force and os.path.exists(dest) and not os.path.isdir(dest):
-        raise Exception("ERROR io_utils:copy_file: dest to copy to, {}, already exists (to copy anyway, rerun with force=True))".format(dest))
-    os.makedirs(os.path.dirname(dest), exist_ok=True) # exist_ok doesn't alter anything; just prevents err from being raised if dest exists
+        raise FileExistsError("ERROR io_utils:copy_file: dest to copy to, {}, "
+                        "already exists (to copy and overwrite, rerun "
+                        "with force=True))".format(dest))
+    # fail if dest is a dir but it contains of a file called src
+    src_filename = os.path.basename(src)
+    if not force and os.path.isdir(dest) and \
+            os.path.exists(os.path.abspath(os.path.join(dest, src_filename))):
+            raise FileExistsError("\n\nERROR (io_utils:copy_file)\nTrying to copy file:\n\t"
+                        "{}\nTo dest directory:\n\t{}\n"
+                        "dest already contains a file named {}!\n"
+                        "To overwrite the file, rerun with force=True"
+                        .format(src, dest, src_filename))
+
+    if not os.path.exists(dest) and \
+            not os.path.splitext(dest)[1] and \
+            if_dest_not_exist_make_dir:
+
+        # note: os.path.splittext(dest)[1]
+        # gets the extension on 'dest',
+        # and if there is no extension it will
+        # be an empty string, hence why checking this
+
+        # note2: originally was always calling
+        # makedirs, regardless of this situation
+        # (was assuming that if dest had no extension
+        # it didn't exist, that you want it to be
+        # a dir)
+        # if you go back to always calling this,
+        # add exist_ok=True option, i.e.:
+        #   os.makedirs(os.path.dirname(dest), exist_ok=True)
+        # else, makedirs will fail if dest exists
+        os.makedirs(os.path.dirname(dest))
+
     '''
     if you ever change from using shutil.copy,
     make sure new method does what you claim in this function,
@@ -81,6 +231,7 @@ def copy_file(src, dest, force=False):
     https://docs.python.org/2.7/library/shutil.html?highlight=shutil.copy#shutil.copy
     '''
     shutil.copy(src, dest)
+
 
 '''
 copies list of filepaths to a dest folder.
@@ -93,14 +244,14 @@ if any of the resulting dest files exists.
 (if src file isn't abs, will only fail once copy_file
 is called)
 '''
-def copy_files(files, dest, force=False):
+def copy_files(files, dest, force=False, if_dest_not_exist_make_dir=True):
     if not os.path.isabs(dest):
         raise Exception("ERROR io_utils:copy_files: dest dir is not absolute! {}".format(dest))
     if os.path.exists(dest) and not os.path.isdir(dest):
         raise Exception("ERROR io_utils:copy_files: dest exists is not a dir! {}".format(dest))
     os.makedirs(dest, exist_ok=True)
     for file in files:
-        copy_file(file, dest, force)
+        copy_file(file, dest, force, if_dest_not_exist_make_dir)
 
 '''
 Takes abs path to <src> dir and <dest> dir, and
@@ -112,15 +263,15 @@ in to dest, i.e.
 cp -r <src>/. <dest>
 
 Example:
-if you have folder /a/b/c/
+if you have folder a/b/c
 and you want to copy 'c' and contents to
-path /a/d/e/f/,
-  copy_folder_recursively('a/b/c/', 'a/d/e/f/')
+path a/d/e/f,
+  copy_folder_recursively('a/b/c', 'a/d/e/f')
 results in:
-    /a/d/e/f/c/
-  copy_folder_recursively('a/b/c/', a/d/e/f/', explode=True)
+    a/d/e/f/c
+  copy_folder_recursively('a/b/c', a/d/e/f', explode=True)
 results in
-    all contents of '/a/b/c/' copied directly in to a/d/e/f/
+    contents of 'a/b/c' copied directly in to a/d/e/f
 '''
 def copy_folder_recursively(src, dest, explode=False):
     if not os.path.isabs(src) or not os.path.isabs(dest):
