@@ -27,9 +27,9 @@ import sys
 import os
 import shutil
 import argparse
+sys.path.append("..")
 import io_utils
 from pathlib import Path
-sys.path.append("..")
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 a = os.path.abspath(os.path.join(SCRIPT_DIR, "a.txt"))
