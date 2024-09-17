@@ -72,7 +72,7 @@ def copy_path(src, dest, force=False, explode=False, if_dest_not_exist_make_dir=
                         "src or dest are not absolute")
     if not os.path.exists(src):
         raise Exception(("ERROR io_utils:copy_path: "
-                        "src to copy doesn't exist! src: {}").format(src))
+                         "src to copy doesn't exist! src: {}").format(src))
 
     if os.path.isdir(src):
         copy_folder_recursively(src, dest, explode)
@@ -80,8 +80,8 @@ def copy_path(src, dest, force=False, explode=False, if_dest_not_exist_make_dir=
         copy_file(src, dest, force, if_dest_not_exist_make_dir)
     else:
         raise Exception(("ERROR io_utils:copy_path: "
-                        "src not file or dir according to python.. "
-                        "src: {}").format(src))
+                         "src not file or dir according to python.. "
+                         "src: {}").format(src))
 
 
 '''
@@ -109,16 +109,21 @@ def copy_paths(paths, dest, force=False, explode=False, if_dest_not_exist_make_d
 filepath: absolute path to a file.
 Reads text content and returns as String
 '''
+
+
 def get_file_as_str(filepath):
     if not os.path.isabs(filepath):
-        sys.exit(("ERROR: (io_utils): can't read {}, path is not absolute!").format(filepath))
+        sys.exit(("ERROR: (io_utils): can't read {}, "
+                  "path is not absolute!").format(filepath))
     if not os.path.exists(filepath):
-        sys.exit(("ERROR: (io_utils): Can't read {}; file does not exist!").format(filepath))
+        sys.exit(("ERROR: (io_utils): Can't read {}; "
+                  "file does not exist!").format(filepath))
 
     file = open(filepath, "r", encoding=ENC)
     file_str = file.read()
     file.close()
     return file_str
+
 
 '''
 filepath: absolute path to a file.
@@ -126,12 +131,19 @@ Writes string to file at specified path.
 Makes dirs in path if they do not exist.
 force arg allows overwrite if file exists
 '''
+
+
 def write_str_to_file(string, filepath, force):
     if not os.path.isabs(filepath):
-        sys.exit(("ERROR: (io_utils.py) Output file not absolute! (Output file: {})").format(filepath))
+        sys.exit(("ERROR: (io_utils:write_str_to_file) "
+                  "Output file not absolute! "
+                  "(Output file: {})").format(filepath))
 
     if os.path.exists(filepath) and not force:
-        sys.exit(("ERROR: (io_utils.py) Output file {} exists (your script should call this function with force arg as True)").format(filepath))
+        sys.exit(("ERROR (io_utils:write_str_to_file): Output "
+                  "file {} exists "
+                  "(your script should call this function with "
+                  "force=True)").format(filepath))
     # create dirs in path if they don't exist
     basedir = os.path.dirname(filepath)
     if not os.path.exists(basedir):
@@ -190,17 +202,18 @@ def copy_file(src, dest, force=False, if_dest_not_exist_make_dir=True):
     # fail if dest exists and isn't a dir
     if not force and os.path.exists(dest) and not os.path.isdir(dest):
         raise FileExistsError("ERROR io_utils:copy_file: dest to copy to, {}, "
-                        "already exists (to copy and overwrite, rerun "
-                        "with force=True))".format(dest))
+                              "already exists (to copy and overwrite, rerun "
+                              "with force=True))".format(dest))
     # fail if dest is a dir but it contains of a file called src
     src_filename = os.path.basename(src)
     if not force and os.path.isdir(dest) and \
             os.path.exists(os.path.abspath(os.path.join(dest, src_filename))):
-            raise FileExistsError("\n\nERROR (io_utils:copy_file)\nTrying to copy file:\n\t"
-                        "{}\nTo dest directory:\n\t{}\n"
-                        "dest already contains a file named {}!\n"
-                        "To overwrite the file, rerun with force=True"
-                        .format(src, dest, src_filename))
+        raise FileExistsError("\n\nERROR (io_utils:copy_file)\n"
+                              "Trying to copy file:\n\t"
+                              "{}\nTo dest directory:\n\t{}\n"
+                              "dest already contains a file named {}!\n"
+                              "To overwrite the file, rerun with force=True"
+                              .format(src, dest, src_filename))
 
     if not os.path.exists(dest) and \
             not os.path.splitext(dest)[1] and \
@@ -244,14 +257,19 @@ if any of the resulting dest files exists.
 (if src file isn't abs, will only fail once copy_file
 is called)
 '''
+
+
 def copy_files(files, dest, force=False, if_dest_not_exist_make_dir=True):
     if not os.path.isabs(dest):
-        raise Exception("ERROR io_utils:copy_files: dest dir is not absolute! {}".format(dest))
+        raise Exception("ERROR io_utils:copy_files: dest dir "
+                        "is not absolute! {}".format(dest))
     if os.path.exists(dest) and not os.path.isdir(dest):
-        raise Exception("ERROR io_utils:copy_files: dest exists is not a dir! {}".format(dest))
+        raise Exception("ERROR io_utils:copy_files: dest exists "
+                        "is not a dir! {}".format(dest))
     os.makedirs(dest, exist_ok=True)
     for file in files:
         copy_file(file, dest, force, if_dest_not_exist_make_dir)
+
 
 '''
 Takes abs path to <src> dir and <dest> dir, and
@@ -273,9 +291,13 @@ results in:
 results in
     contents of 'a/b/c' copied directly in to a/d/e/f
 '''
+
+
 def copy_folder_recursively(src, dest, explode=False):
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        sys.exit("ERROR: (io_utils): can't copy folder - either src or dest is not absolute!")
+        sys.exit("ERROR (io_utils:copy_folder_recursively): "
+                 "can't copy folder - either src or dest "
+                 "is not absolute!")
 
     src_dir = src
     # need to get top level folder name to construct dest path
@@ -283,7 +305,7 @@ def copy_folder_recursively(src, dest, explode=False):
     # os.path.basename will return empty string if path ends in '/' char
     # so strip it off if its there
     if src_dir.endswith("/"):
-        src_dir = src_dir[:-1] # strips off last char of string
+        src_dir = src_dir[:-1]  # strips off last char of string
 
     src_foldername = os.path.basename(src_dir)
     dest_dir = dest
@@ -294,11 +316,14 @@ def copy_folder_recursively(src, dest, explode=False):
     # check if src and dest are same (distutils will fail if they are)
     if not src_dir == dest_dir:
         # shutil will fail if the dest dir exists
-        # update : FYI dirs_exist_ok corrects problem of existing dir, but using distutils now so just going to keep using
-        #shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
+        # update : FYI dirs_exist_ok corrects problem
+        # of existing dir, but using distutils now so
+        # just going to keep using
+        # shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
         # https://stackoverflow.com/questions/10047521/how-to-copy-directory-with-all-file-from-c-xxx-yyy-to-c-zzz-in-python/17358075
         distutils.dir_util.copy_tree(src_dir, dest_dir)
         # distutils depracated? go back to shutil eventually?
+
 
 '''
 Takes a filepath (either path to a file, or path to a directory).
@@ -311,16 +336,20 @@ Ex:
     createPath("a/b/c/d") --> creates a/b/c/d/
 Note: if the filepath already exists, it simply returns.
 '''
+
+
 def createPath(filepath):
-    if os.path.exists(filepath): return True
+    if os.path.exists(filepath):
+        return True
     # doesn't exist. Make best guess if this is
     # a dir of file (if no extension, assuming it's a dir.)
     parentDir = filepath
-    if os.path.splitext(filepath)[-1]: # returns extension like .txt, or empty string if none
+    if os.path.splitext(filepath)[-1]:  # returns file ext like .txt; empty string if no extension
         # get parent from filepath
         parentDir = os.path.split(os.path.abspath(filepath))[0]
-    os.makedirs(parentDir, exist_ok=True) # exist_ok to True or will fail if exists
+    os.makedirs(parentDir, exist_ok=True)  # exist_ok to True or will fail if exists
     return True
+
 
 '''
 Return list of paths to all immediate files in a directory.
@@ -348,13 +377,16 @@ throws exception if folder does not exist
 https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
  (answer by gahooa)
 '''
+
+
 def list_files(folder, names=False):
     files = []
     if names:
-        files = [ f.name for f in os.scandir(folder) if f.is_file() ]
+        files = [f.name for f in os.scandir(folder) if f.is_file()]
     else:
-        files = [ f.path for f in os.scandir(folder) if f.is_file() ]
+        files = [f.path for f in os.scandir(folder) if f.is_file()]
     return files
+
 
 '''
 Return list of paths to all immediate subdirs in a directory.
@@ -382,10 +414,12 @@ throws exception if folder does not exist
 https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
  (answer by gahooa)
 '''
+
+
 def list_subdirs(folder, names=False):
     subfolders = []
     if names:
-        subfolders = [ f.name for f in os.scandir(folder) if f.is_dir() ]
+        subfolders = [f.name for f in os.scandir(folder) if f.is_dir()]
     else:
-        subfolders = [ f.path for f in os.scandir(folder) if f.is_dir() ]
+        subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
     return subfolders
