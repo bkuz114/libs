@@ -356,6 +356,100 @@ def copy_folder_recursively(src, dest, explode=False, glob_ignore=[]):
 
 
 '''
+copy_folders
+
+dirpaths:
+    List of Lists.
+    Each contains: [PATH [GLOBLIST]]
+    Where PATH is a directory to
+    copy, and [GLOBLIST] is a list of
+    Strings, representing glob patterns
+    for paths to exclude during the copy
+    operation for PATH.
+
+destpath:
+    String. Absolute path of
+    directory to copy dirpaths to
+
+general_globs:
+    List of Strings representing glob
+    patterns for paths to exclude in
+    the copy operation for EVERY folder
+    in dirpaths (in addition to any
+    specific globs a folder in dirpaths
+    may have)
+
+explode:
+    boolean. if true, the the contents
+    of the directories in dirpaths
+    will be copied directly into destpath
+    (rather than copying the folders them
+    selves)
+'''
+
+
+def copy_folders(dirpaths, destpath, general_globs=[], explode=False):
+
+    common_err_prefix = "\n\nio_utils:copy_folders:"
+    common_err_msg = "\n(dirpaths should be a list of lists. " \
+                     "Each inner list should have format: " \
+                     "[PATH, [GLOBLIST]], " \
+                     "where PATH is the path of the directory " \
+                     "to copy, and [GLOBLIST] is a list of globs " \
+                     "for paths to exclude during the copy operation.)\n"
+
+    '''
+    Each inner list in 'dirpaths'
+    represents a single directory
+    to copy. Loop through 'dirpaths'
+    and call 'copy_folder_recursively'
+    on that dir, with relevant info.
+    '''
+    for dirpath_list in dirpaths:
+
+        dirpath = ""
+        globs = []
+
+        # make sure it is a list
+        if not type(dirpath_list) is list:
+            raise Exception("{} one of the elements "
+                            "in 'dirpaths' arg is NOT a list."
+                            "{}"
+                            "Problem item:\n{}"
+                            .format(common_err_prefix, common_err_msg,
+                                    str(dirpath_list)))
+        if len(dirpath_list) == 2:
+            # first is path, second (if any) is list of globs
+            dirpath = dirpath_list[0]
+            globs = dirpath_list[1]
+            if type(globs) is list:
+                # those are globs JUST for this directory;
+                # add general globs to it (if any)
+                globs.extend(general_globs)
+            else:
+                raise Exception("{} while looping through 'dirpaths' arg, "
+                                "came across an inner list which DOES "
+                                "have two items, however, the second item "
+                                "is NOT a list."
+                                "{}"
+                                "Problem element:\n"
+                                "  1. (the inner list itself):\n\t{}\n"
+                                "  2. (2nd item in the inner list):\n\t{}\n"
+                                .format(common_err_prefix, common_err_msg,
+                                        str(dirpath_list), str(globs)))
+        else:
+            raise Exception("{} while looping through 'dirpaths' arg, "
+                            "came across an inner list which does not "
+                            "have two items."
+                            "{}"
+                            "Problem inner list:\n{}"
+                            .format(common_err_prefix, common_err_msg,
+                                    str(dirpath_list)))
+
+        copy_folder_recursively(dirpath, destpath, explode, globs)
+
+
+'''
 Takes a filepath (either path to a file, or path to a directory).
 If it's a file, creates parent directory recurisvely.
 If it's a directory, creates entire dirpath.
