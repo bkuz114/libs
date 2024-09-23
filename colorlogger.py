@@ -5,15 +5,41 @@ and colors console output based on the log level.
 
 usage:
 
-    import utils.colorlogger as colorLogger
+    import utils.colorlogger as colorlogger
+    import logging
 
-    colorLogger.setup()
-    colorLogger.test()
+    colorlogger.setup()
+    colorlogger.test()
+    logger = logging.getLogger(__name__)
+    logger.debug("debug message")
+    logger.info("info message")
+    logger.warning("warning message")
+    logger.error("error message")
+    logger.critical("critical message")
+
+    ** Note: make note of the arguments for 'setup'
+    function; depending on arguments given (or not
+    given), you will not see all of the test messages
+    in the 'usage' above.
 
 '''
 
 import sys
+import os
 import logging
+'''
+Need to import io_utils; it's in
+same dir as colorlogger, however,
+need to add their directory to
+path before "import io_utils".
+        Why:
+if another script is importing
+colorlogger and it's in a different
+directory than colorlogger, then
+'import io_utils' will fail as their
+dir is not in the running script's path.
+'''
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import io_utils
 
 # some formats to use
@@ -26,9 +52,11 @@ custom logging Formatter to display
 log levels in different colors and formatts
 https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
 '''
+
+
 class CustomFormatter(logging.Formatter):
 
-    green ="\x1b[32;20m"
+    green = "\x1b[32;20m"
     blue = "\x1b[34;20m"
     grey = "\x1b[38;20m"
     yellow = "\x1b[33;20m"
@@ -49,38 +77,68 @@ class CustomFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
+
 '''
 set up root logger
 
 Arguments:
-    @loglevel: what level to log from
-    @logfile_nocolor: path of colorless logfile
-        (rel script importing this; if none, don't make one.)
-    @logfile_color: path of colorful logfile
-        ("" "")
+    @loglevel_console: (int) level to log onto console
+        - valid values are the numeric levels used by
+          python's logging module. see:
+          https://docs.python.org/3/library/logging.html#logging-levels
+    @loglevel_logile: (int) level to log into logfilex
+        - valid values are the numeric levels used by
+          python's logging module. see:
+          https://docs.python.org/3/library/logging.html#logging-levels
+    @logfile_nocolor: (String) path of colorless logfile
+        - must be absolute path.
+        - if None or empty string, won't make one
+    @logfile_color: (String) path of colorful logfile
+        - must be absolute path.
+        - if None or empty string, won't make one
+    @console: (boolean) if True, root logger will log to
+        console, if False, will NOT log to console.
+    @console_nocolor: (boolean) if True, console output
+        from root logger will be colorless.
+    @stderr: (boolean) if True, then console output from
+        from root logger will go to stderr, else will go
+        to stdout.
 '''
-def setup(loglevel_console=logging.DEBUG, loglevel_logfile=logging.DEBUG, logfile_nocolor=None, logfile_color=None):
+
+
+def setup(loglevel_console=logging.DEBUG,
+          loglevel_logfile=logging.DEBUG,
+          logfile_nocolor=None, logfile_color=None,
+          console=True, console_nocolor=False, stderr=False):
+
     '''
-    create handlers (console and logfile)
+    create handlers (console and logfile(s))
     '''
     handlers = []
 
     # console handler
-    ch = logging.StreamHandler(sys.stdout) # if you don't do this, will print to stderr
-    ch.setFormatter(CustomFormatter())
-    ch.setLevel(loglevel_console)
-    handlers.append(ch)
-
-    # logfile handlers
-    # first logfile (prints full date, suppresses color)
+    if console:
+        mystream = sys.stdout
+        if stderr:
+            mystream = sys.stderr
+        ch = logging.StreamHandler(mystream)
+        if console_nocolor:
+            ch.setFormatter(logging.Formatter(FORMAT_LOGFILE))
+        else:
+            ch.setFormatter(CustomFormatter())
+        ch.setLevel(loglevel_console)
+        handlers.append(ch)
+    # regular logfile (prints full date, suppresses color)
     if logfile_nocolor:
-        io_utils.createPath(logfile_nocolor) # parent dir must exist of logging will fail
+        # log file's containing dir must exist or logging will fail
+        io_utils.createPath(logfile_nocolor)
         fh = logging.FileHandler(logfile_nocolor, "w")
         fh.setFormatter(logging.Formatter(FORMAT_LOGFILE))
         fh.setLevel(loglevel_logfile)
         handlers.append(fh)
-    # second logfile (same format as console handler; cat to see the color)
+    # colored logfile (same format as console handler; cat to see color)
     if logfile_color:
+        # log file's containing dir must exist or logging will fail
         io_utils.createPath(logfile_color)
         fh2 = logging.FileHandler(logfile_color, "w")
         fh2.setFormatter(CustomFormatter())
@@ -91,9 +149,11 @@ def setup(loglevel_console=logging.DEBUG, loglevel_logfile=logging.DEBUG, logfil
     '''
     REGARDING SETTING THE LOG LEVEL FOR ROOT LOGGER::
 
-    you MUST set root logger's level, and set it as low as possible. Why:
+    you MUST set root logger's level, and set it as low as possible.
+    Why:
     - if not set, root logger's log level defaults to WARNING.
-    - .setLevel() calls on individual handlers are ignored if lower than the root logger's
+    - .setLevel() calls on individual handlers are ignored if
+      lower than the root logger's
     (e.g. suppose you don't set root loggers level here;
     it will get set to WARNING. Then suppose you set DEBUG
     for a fileHandler's level; since that's lower than WARNING,
@@ -108,6 +168,15 @@ def setup(loglevel_console=logging.DEBUG, loglevel_logfile=logging.DEBUG, logfil
             datefmt='%H:%M:%S',
             handlers=handlers
         )
+
+    if not console and not logfile_color and not logfile_nocolor:
+        # disable all logging
+        '''
+        this next list disabled anything
+        from CRITICAL down; hence everything
+        '''
+        logging.disable(logging.CRITICAL)
+
 
 def test():
     logger = logging.getLogger(__name__)
