@@ -51,6 +51,11 @@ FORMAT_CONSOLE_HIGH = "%(levelname)s: %(message)s (%(filename)s:%(lineno)d)"
 custom logging Formatter to display
 log levels in different colors and formatts
 https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+
+NOTE: class name 'CustomFormatter' is not
+significant; can make as many of
+these classes as I want as long as
+they are inheriting from logging.Formatter.
 '''
 
 
@@ -72,6 +77,17 @@ class CustomFormatter(logging.Formatter):
         logging.CRITICAL: bold_red + FORMAT_CONSOLE_HIGH + reset
     }
 
+    '''
+    If a log handler has their
+    formatter set to an instance
+    of this class, then any
+    logging from that handler will
+    be filtered through the "format"
+    function below: the statement
+    being logged will be passed to
+    format function; output of that
+    function is what gets printed.
+    '''
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
