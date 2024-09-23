@@ -483,6 +483,12 @@ Note: if the filepath already exists, it simply returns.
 
 
 def createPath(filepath, assume_dir=True):
+    if not os.path.isabs(filepath):
+        raise Exception("\n\nio_utils:createPath: trying to "
+                        "create directory path for {}, but "
+                        "it's not an absolute path"
+                        .format(filepath))
+
     if os.path.exists(filepath):
         return True
     else:
