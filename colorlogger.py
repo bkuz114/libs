@@ -71,7 +71,8 @@ class CustomFormatter(logging.Formatter):
 
     FORMATS = {
         logging.DEBUG: green + FORMAT_CONSOLE_BASIC + reset,
-        logging.INFO: blue + FORMAT_CONSOLE_BASIC + reset,
+        #logging.INFO: blue + FORMAT_CONSOLE_BASIC + reset,
+        logging.INFO: FORMAT_CONSOLE_BASIC,
         logging.WARNING: yellow + FORMAT_CONSOLE_HIGH + reset,
         logging.ERROR: red + FORMAT_CONSOLE_HIGH + reset,
         logging.CRITICAL: bold_red + FORMAT_CONSOLE_HIGH + reset
@@ -114,8 +115,6 @@ Arguments:
         - if None or empty string, won't make one
     @console: (boolean) if True, root logger will log to
         console, if False, will NOT log to console.
-    @console_nocolor: (boolean) if True, console output
-        from root logger will be colorless.
     @stderr: (boolean) if True, then console output from
         from root logger will go to stderr, else will go
         to stdout.
@@ -125,7 +124,7 @@ Arguments:
 def setup(loglevel_console=logging.DEBUG,
           loglevel_logfile=logging.DEBUG,
           logfile_nocolor=None, logfile_color=None,
-          console=True, console_nocolor=False, stderr=False):
+          console=True, stderr=False):
 
     '''
     create handlers (console and logfile(s))
@@ -138,10 +137,7 @@ def setup(loglevel_console=logging.DEBUG,
         if stderr:
             mystream = sys.stderr
         ch = logging.StreamHandler(mystream)
-        if console_nocolor:
-            ch.setFormatter(logging.Formatter(FORMAT_LOGFILE))
-        else:
-            ch.setFormatter(CustomFormatter())
+        ch.setFormatter(CustomFormatter())
         ch.setLevel(loglevel_console)
         handlers.append(ch)
     # regular logfile (prints full date, suppresses color)
