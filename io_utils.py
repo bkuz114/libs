@@ -147,7 +147,8 @@ glob_ignore:
 '''
 
 
-def copy_path(src, dest, force=False, explode=False, assume_dir=True, glob_ignore=[]):
+def copy_path(src, dest, force=False, explode=False, assume_dir=True,
+              glob_ignore=[]):
     if not os.path.isabs(src) or not os.path.isabs(dest):
         raise Exception("ERROR io_utils:copy_path: "
                         "src or dest are not absolute")
@@ -181,7 +182,8 @@ for expalatnions **
 '''
 
 
-def copy_paths(paths, dest, force=False, explode=False, assume_dir=True, glob_ignore=[]):
+def copy_paths(paths, dest, force=False, explode=False, assume_dir=True,
+               glob_ignore=[]):
     for path in paths:
         copy_path(path, dest, force, explode, assume_dir, glob_ignore)
 
