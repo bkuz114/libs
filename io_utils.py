@@ -6,6 +6,56 @@ ENC = 'utf-8'
 
 
 '''
+Takes a filepath, and checks if
+absolute or relative. If relative,
+evluates relative to a given path.
+Normalizes before returning in
+case it contains a combination of
+Unix and Windows path separators.
+
+Returns the normalized, absolute
+version of the filepath.
+
+path:
+    String. The path to evalute
+relTo:
+    String: Path to evluate relative
+    to, in case path is relative.
+
+Note: if neither path nor relTo
+are absolute, error is thrown.
+
+ex:
+    absolute("../b.txt", "C:\\Users\\Boris\\Desktop")
+    --> "C:\\Users\\Boris\\b.txt"
+'''
+
+
+def absolute(path, relTo):
+    if not path:
+        raise Exception("\n\nERROR: io_utils:absolute: "
+                        "Path to convert to absolute is "
+                        "empty or None.\nPath: {}"
+                        .format(path))
+    if not os.path.isabs(path):
+        if not os.path.isabs(relTo):
+            raise Exception("\n\nERROR: io_utils:absolute: "
+                            "This function takes a path, and "
+                            "if that path is not absolute, it "
+                            "forms the absolute value of that "
+                            "path relative some other path.\n"
+                            "Issue: Path passed was not absolute, "
+                            "but path to evaluate it from is "
+                            "not aboslute either!\n\n"
+                            "Path:\n{}\n\n"
+                            "Path to evaluate it relative from:\n{}"
+                            .format(path, relTo))
+        path = os.path.abspath(os.path.join(relTo, path))
+    # normpath normalizes in case Unix + Windows separators
+    return os.path.normpath(path)
+
+
+'''
 helper function to
 get a file extension,
 since I'm always forgetting
