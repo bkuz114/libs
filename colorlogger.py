@@ -113,6 +113,8 @@ Arguments:
     @logfile_color: (String) path of colorful logfile
         - must be absolute path.
         - if None or empty string, won't make one
+    @append: (boolean) if True, log files will be appended to
+        if they exist, else will overwrite.
     @console: (boolean) if True, root logger will log to
         console, if False, will NOT log to console.
     @stderr: (boolean) if True, then console output from
@@ -124,12 +126,18 @@ Arguments:
 def setup(loglevel_console=logging.DEBUG,
           loglevel_logfile=logging.DEBUG,
           logfile_nocolor=None, logfile_color=None,
+          append=False,
           console=True, stderr=False):
 
     '''
     create handlers (console and logfile(s))
     '''
     handlers = []
+
+    # write mode for log files
+    write_mode="w"  # overwrite mode
+    if append:
+        write_mode="a"  # append mode
 
     # console handler
     if console:
@@ -144,7 +152,7 @@ def setup(loglevel_console=logging.DEBUG,
     if logfile_nocolor:
         # log file's containing dir must exist or logging will fail
         io_utils.createPath(logfile_nocolor)
-        fh = logging.FileHandler(logfile_nocolor, "w")
+        fh = logging.FileHandler(logfile_nocolor, write_mode)
         fh.setFormatter(logging.Formatter(FORMAT_LOGFILE))
         fh.setLevel(loglevel_logfile)
         handlers.append(fh)
@@ -152,7 +160,7 @@ def setup(loglevel_console=logging.DEBUG,
     if logfile_color:
         # log file's containing dir must exist or logging will fail
         io_utils.createPath(logfile_color)
-        fh2 = logging.FileHandler(logfile_color, "w")
+        fh2 = logging.FileHandler(logfile_color, write_mode)
         fh2.setFormatter(CustomFormatter())
         fh2.setLevel(loglevel_logfile)
         handlers.append(fh2)
