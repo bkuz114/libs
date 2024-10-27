@@ -49,10 +49,29 @@ FORMAT_CONSOLE_HIGH = "%(levelname)s: %(message)s (%(filename)s:%(lineno)d)"
 
 '''
 custom logging Formatter to display
-log levels in different colors and formatts
+log levels in different colors.
 https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
 
-NOTE: class name 'CustomFormatter' is not
+NOTE: you do NOT need to utilize this
+CustomFormatter class when using
+colorlogger.py externally; this class
+is to be used internally within this script...
+
+How to use within this script:
+
+- When you create a Handler for a logger
+  (i.e. a StreamHandler, FileHandler, etc.),
+  you can set a Formatter for that Handler
+  (i.e. <handler>.setFormatter(<formatter>)..
+- log messages printed by that hanlder will
+  be formatted according to that Formatter's
+  settings.
+- So, if you want log messages to be colored,
+  then set your Handler's formatter to an
+  instance of this class
+  (i.e. <handler>.setFormatter(CustomFormatter())
+
+NOTE2: class name 'CustomFormatter' is not
 significant; can make as many of
 these classes as I want as long as
 they are inheriting from logging.Formatter.
@@ -77,6 +96,22 @@ class CustomFormatter(logging.Formatter):
         logging.ERROR: red + FORMAT_CONSOLE_HIGH + reset,
         logging.CRITICAL: bold_red + FORMAT_CONSOLE_HIGH + reset
     }
+
+    ''' 'colorinfo' arg determines if
+    logger.info lines will be colored,
+    for whichever handler you're using
+    this CustomFormatter with.
+
+    <handler>.setFormatter(CustomFormatter(True))
+        --> <handler>'s info msgs will be colored
+    <handler>.setFormatter(CustomFormatter())
+        --> <handler>'s info msgs wont be colored
+    <handler>.setFormatter(CustomFormatter(False))
+        --> <handler>'s info msgs wont be colored
+    '''
+    def __init__(self, colorinfo=False):
+        if colorinfo:
+            self.FORMATS[logging.INFO] = self.blue + FORMAT_CONSOLE_BASIC + self.reset
 
     '''
     If a log handler has their
@@ -120,6 +155,14 @@ Arguments:
     @stderr: (boolean) if True, then console output from
         from root logger will go to stderr, else will go
         to stdout.
+    @colorinfo: (boolean) if True, then .info lines on
+        the CONSOLE ONLY will be colored (else, they will
+        have no color, whereas other levels such as debug
+        will. Note: the reason I do this is because in
+        some applications having color on the console is
+        distracting, whereas in others like book-builder,
+        its an easy way to differentiate what's coming from
+        where without having to prefix lines with heavy data)
 '''
 
 
@@ -127,7 +170,7 @@ def setup(loglevel_console=logging.DEBUG,
           loglevel_logfile=logging.DEBUG,
           logfile_nocolor=None, logfile_color=None,
           append=False,
-          console=True, stderr=False):
+          console=True, stderr=False, colorinfo=False):
 
     '''
     create handlers (console and logfile(s))
@@ -145,7 +188,7 @@ def setup(loglevel_console=logging.DEBUG,
         if stderr:
             mystream = sys.stderr
         ch = logging.StreamHandler(mystream)
-        ch.setFormatter(CustomFormatter())
+        ch.setFormatter(CustomFormatter(colorinfo))
         ch.setLevel(loglevel_console)
         handlers.append(ch)
     # regular logfile (prints full date, suppresses color)
