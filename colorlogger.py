@@ -235,8 +235,8 @@ def setup(loglevel_console=logging.DEBUG,
     if not console and not logfile_color and not logfile_nocolor:
         # disable all logging
         '''
-        this next list disabled anything
-        from CRITICAL down; hence everything
+        next line disables any messages
+        from CRITICAL down, hence everything
         '''
         logging.disable(logging.CRITICAL)
 
