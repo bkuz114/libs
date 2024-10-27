@@ -135,9 +135,9 @@ def setup(loglevel_console=logging.DEBUG,
     handlers = []
 
     # write mode for log files
-    write_mode="w"  # overwrite mode
+    write_mode = "w"  # overwrite mode
     if append:
-        write_mode="a"  # append mode
+        write_mode = "a"  # append mode
 
     # console handler
     if console:
