@@ -92,6 +92,8 @@ def add_classes(tag, class_list):
             tag['class'] = final_list
             #tag['class'].extend(final_list)
         else:
+            # use beautifulsoup4==4.11.1 if you use v 4.13.3 will hit this
+            # because the types are different
             raise Exception("Can't identify type of tag's 'class' attr")
     else:
         tag['class'] = class_list
