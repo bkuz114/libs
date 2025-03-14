@@ -3,7 +3,7 @@ import copy
 import re
 import io_utils
 import bs4 # needed to typecheck objects i.e. bs4.element.Tag
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 
 ENC = 'utf-8-sig'
 
@@ -263,10 +263,13 @@ add_to_head: boolean. if true, append to <head>, else append to <body>
 '''
 def add_js_tags(soup, paths, add_to_head=True):
     for path in paths:
+        script_tag = head_tag(path, "js")
+        comment = Comment(' #script tag added via beautiful_soup_utils.py ')
+        script_tag.script.insert_before(comment)
         if add_to_head:
-            soup.head.append(head_tag(path, "js"))
+            soup.head.append(script_tag)
         else:
-            soup.body.append(head_tag(path, "js"))
+            soup.body.append(script_tag)
 
 '''
 adds css tags to <head> of document from a list
