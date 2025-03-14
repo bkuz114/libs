@@ -230,22 +230,11 @@ def replace_all_occurances_in_doc(soup, find, replace_with):
     for mmatch in matches:
         mmatch.replace_with(replace_with)
 
-'''
-Returns a BeautifulSoup Tag object
-for a css or js <script> or <link> tag
+def js_tag(path):
+    return BeautifulSoup('<script type="text/javascript" src="' + path + '"></script>', "html.parser")
 
-Arguments:
-----------
-    path: String. path to go in 'path' attr of <script> tag
-    tagType: String. Must be either 'js' or 'css'
-'''
-def head_tag(path, tagType):
-    if tagType == "css":
-        return BeautifulSoup('<link rel="stylesheet" href="' + path + '" type="text/css">', "html.parser")
-    elif tagType == "js":
-        return BeautifulSoup('<script type="text/javascript" src="' + path + '"></script>', "html.parser")
-    else:
-        raise Exception("beautiful_soup_utils 'head_tag' function only tags 'css' or 'js' as tagType")
+def css_tag(path):
+    return BeautifulSoup('<link rel="stylesheet" href="' + path + '" type="text/css">', "html.parser")
 
 '''
 add script tags to head of document
@@ -263,7 +252,7 @@ add_to_head: boolean. if true, append to <head>, else append to <body>
 '''
 def add_js_tags(soup, paths, add_to_head=True):
     for path in paths:
-        script_tag = head_tag(path, "js")
+        script_tag = js_tag(path)
         comment = Comment(' #script tag added via beautiful_soup_utils.py ')
         script_tag.script.insert_before(comment)
         if add_to_head:
@@ -301,7 +290,7 @@ def add_css_head_tags(soup, paths, startAt=None):
     # make list of tags from list of paths
     new_paths = BeautifulSoup("", 'html.parser')
     for path in paths:
-        new_paths.append(head_tag(path, tagType="css"))
+        new_paths.append(css_tag(path))
 
     # find last <link> tag in <head> and insert the new
     # paths after that; if there aren't any <link> tags
