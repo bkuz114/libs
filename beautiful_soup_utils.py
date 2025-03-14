@@ -255,14 +255,18 @@ soup: BeautifulSoup4 object
 paths: list of Strings, which should be src urls to the script
     if rel paths, make sure they are rel the HTML doc you're adding to,
     for where its final location will be.
+add_to_head: boolean. if true, append to <head>, else append to <body>
 
-** Note - this will append them to END of <head>; the order is important.
+** Note - this will append them to END of <head> or <body>; the order is important.
    example - if you are adding a script which uses jquery, you'd need jquery
    script tag to come before the script which relies on it.
 '''
-def add_js_head_tags(soup, paths):
+def add_js_tags(soup, paths, add_to_head=True):
     for path in paths:
-        soup.head.append(head_tag(path, tagType="js"))
+        if add_to_head:
+            soup.head.append(head_tag(path, "js"))
+        else:
+            soup.body.append(head_tag(path, "js"))
 
 '''
 adds css tags to <head> of document from a list
