@@ -252,7 +252,6 @@ def css_tag(path):
     return BeautifulSoup('<link rel="stylesheet" href="' + path
                          + '" type="text/css">', "html.parser")
 
-
 def add_js_tags(soup, paths, add_to_head=True):
     """
     add js script tags to soup
@@ -307,7 +306,10 @@ def add_css_head_tags(soup, paths, startAt=None):
     # make list of tags from list of paths
     new_paths = BeautifulSoup("", 'html.parser')
     for path in paths:
-        new_paths.append(css_tag(path))
+        link_tag = css_tag(path)
+        comment = Comment(" #link tag added via beautiful_soup_utils.py ")
+        link_tag.link.insert_before(comment)
+        new_paths.append(link_tag)
 
     # find last <link> tag in <head> and insert the new
     # paths after that; if there aren't any <link> tags
