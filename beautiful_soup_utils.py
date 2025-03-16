@@ -3,6 +3,7 @@ import copy
 import re
 import io_utils
 import bs4 # needed to typecheck objects i.e. bs4.element.Tag
+from bs4.dammit import EntitySubstitution # for custom formatter for prettify
 from bs4 import BeautifulSoup, Comment
 
 ENC = 'utf-8-sig'
@@ -352,6 +353,75 @@ def make_soup_from_file(filepath):
 
 
 '''
+custom formatter for BeautifulSoup prettify.
+Will preserve both &nbsp and Cyrillic chars.
+When this function is passed as an arg to
+formatter option (i.e. prettify(formatter=preserve_nbsp_and_ru))
+then every String and attribute value encountered
+will be passed to it; prettify will output
+whatever value is returned.
+(p.s. this is necessary, because:
+    - if you don't supply a formatter arg, &nbsp are destroyed
+    - if you supply formatter='html', &nbsp are preserved, but
+        Cyrillic gets mangled.
+    - Note: formatter arg to prettify can take only 4 values:
+    (1) minimal (removes &nbsp; preserves Cyrillic),
+    (2) html (preserves &nbsp; mangles Cyrillic),
+    (3) html5 (not sure behavior)
+    (4) None (removes &nbsp; preseves Cyrillic)
+        [but docs warn it can generate bad HTML]
+    (5) custom function.
+
+See this SO I posted about this:
+    https://stackoverflow.com/questions/69790205/prettify-with-beautifulsoup-using-a-formatter-that-will-preserve-nbsp-and-cyril/69790637#69790637
+'''
+def preserve_nbsp_and_ru(str):
+    newstr = ""
+    # split on nbsp
+    # (&nbsp are parsed in BS as \xa0)
+    # (https://stackoverflow.com/questions/66895175/beautifulsoup-find-tag-with-text-containing-nbsp)
+    split_str = str.split('\xa0')
+    # (this will split a&nbspb&nsbp&c --> [a,b,c])
+    for i, space_between in enumerate(split_str):
+        # space_between will be regular text
+        newstr += space_between
+        # add an &nbsp after it, unless you're on the last
+        # item in the list, after which there would not be an &nbsp
+        if i < len(split_str) - 1:
+            # put the nbsp through the EntitySubstitution function
+            # which will preserve it
+            newstr += EntitySubstitution.substitute_html('\xa0')
+    return newstr
+
+
+'''
+- Take BeautifulSoup object
+- Return prettified String for the object
+
+@soup: BeautifulSoup object to return prettified string for
+@preserve_ru: boolean. If True, prettified string preserves
+    Cyrillic chars (prettify formatter only accepts 5 possible
+    values; some mangle Cyrillic.)
+    ** READ FUNC DOC FOR preserve_nbsp_and_ru **
+@preserve_bnsp: boolean. If True, prettified string preserves
+    &nbsp; chars (prettify formatter only accepts 5 possible
+    values; default destroyes &nbsp;)
+    ** READ FUNC DOC FOR preserve_nbsp_and_ru **
+'''
+
+def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True):
+    formatter_val = 'minimal' # default; preserves cyrillic but removes &nbsp;
+    if preserve_ru and preserve_nbsp:
+        formatter_val = preserve_nbsp_and_ru # cust func that preserves both
+    elif preserve_nbsp:
+        formatter_val = 'html' # preserves &nbsp; but mangles Cyrillic
+    print(formatter_val)
+
+    soup_str = soup.prettify(formatter=formatter_val)
+    return soup_str
+
+
+'''
 Takes a BeautifulSoup object,
 prettifies it and writes to
 an output file.
@@ -367,8 +437,23 @@ Arguments:
     force:
         Boolean. Required. Overwrite
         if files exists
+    preserve_ru:
+        Boolean. optional. If True,
+        prettified version preserves
+        Cyrillic ('formatter' arg to
+        BeautifulSoup's prettify only
+        accepts 5 possible values; some
+        mangle Cyrillic)
+    preserve_nbsp:
+        Boolean. optional. If True,
+        prettified version preserves
+        &nbsp; chars ('formatter' arg
+        to BeautifulSoup's prettify
+        only accepts 5 possible values;
+        some (including default), remove
+        &nbsp;
 '''
-def write_soup_to_file(soup, output_filename, force):
+def write_soup_to_file(soup, output_filename, force, preserve_ru=False, preserve_nbsp=True):
     print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}").format(output_filename))
-    pretty_soup = soup.prettify(formatter='html')
+    pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp)
     io_utils.write_str_to_file(pretty_soup, output_filename, force)
