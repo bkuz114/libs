@@ -423,13 +423,15 @@ def preserve_nbsp_and_ru(string):
     return newstr
 
 
-def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True):
+def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[]):
     """
     prettify a BeautifulSoup4 object
 
     :param BeautifulSoup4 soup: BeautifulSoup object to prettify
     :param boolean preserve_ru: preserve Cyrillic when prettifying
     :param boolean preserve_bnsp: preserve &nbsp; chars
+    :param list[str] taglist: optional. list of HTML tags to
+        collapse whitespace chars inside. i.e. ["em", "h1", "span"]
     :return: prettified STRING for soup
     """
     formatter = 'minimal'  # default formatter for prettify: preserves cyrillic but removes &nbsp;
@@ -439,11 +441,35 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True):
         formatter = 'html'  # preserves &nbsp; but mangles Cyrillic
 
     soup_str = soup.prettify(formatter=formatter)
+    for tag in taglist:
+        soup_str = collapse_tags(soup_str, tag)
     return soup_str
 
 
+def collapse_tags(html, tag):
+    """
+    find tags of a given type in an HTML string (i.e. <h1>)
+    and collapse any whitespace chars inside those tags
+
+    WARNING: Proceed at own risk.
+
+    :param str html: str of html to collapse whitespaces in
+    :param str tag: tag in the html to collapse whitespace in
+        (i.e. "em" , "span", etc.)
+    :return str with whitespace collapsed inside tags
+    """
+    # remove spaces AFTER opening tag
+    # (be mindful of attrs, i.e. <tag class="..")
+    # https://stackoverflow.com/questions/6711567/how-to-use-python-regex-to-replace-using-captured-group
+    reg_open = re.compile(f'<{tag}([^>]*)>\s*')
+    html = reg_open.sub(f'<{tag}\\1>', html)
+    # replace spaces BEFORE closing tag.
+    html = re.sub(f'\s*</{tag}>',f'</{tag}>', html)
+    return html
+
+
 def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
-                       preserve_nbsp=True):
+                       preserve_nbsp=True, taglist=[]):
     """
     write a BeautifulSoup object to a file (prettified)
 
@@ -451,13 +477,16 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
     :param str output_filename: absolute path to file
         to write to.
     :param boolean force: Overwrite if files exists
-    :param boolean preserve_ru: preserve Cyrillic while
-        prettifying
-    :param boolean preserve_nbsp: preserve &nbsp; chars
+    :param boolean preserve_ru: optional. preserve Cyrillic
         while prettifying
+    :param boolean preserve_nbsp: optional preserve &nbsp;
+        chars while prettifying
+    :param list[str] taglist: optional list of tags to
+        collapse whitespace chars inside of during prettify
+        i.e. ["h1", "span", "em"]
     :return: None
     """
     print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}")
           .format(output_filename))
-    pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp)
+    pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp, taglist)
     io_utils.write_str_to_file(pretty_soup, output_filename, force)
