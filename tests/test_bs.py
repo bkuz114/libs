@@ -84,11 +84,14 @@ beautiful_soup_utils.add_css_head_tags(bs, paths3, startAt=3)
 
 # make some random tags and print them..
 print("---- Make some head tags for fun (these are NOT included anywhere in final file) ----")
-tags = {'js': ["./assets/tag1.js", "./assets/js/tag2.js"], 'css': ["./assets/css/tag1.css", "./assets/css/tag2.css"]}
-for tag_type in tags.keys():
-    for tag in tags[tag_type]:
-        print("Make a " + tag_type + " tag for path: " + tag)
-        print("\t{}".format(str(beautiful_soup_utils.head_tag(tag, tagType=tag_type))))
+js_tags = ["./assets/tag1.js", "./assets/js/tag2.js"]
+css_tags = ["./assets/css/tag1.css", "./assets/css/tag2.css"]
+for tag in js_tags:
+    print("Make a js tag for path: " + tag)
+    print("\t{}".format(str(beautiful_soup_utils.js_tag(tag))))
+for tag in css_tags:
+    print("Make a css tag for path: " + tag)
+    print("\t{}".format(str(beautiful_soup_utils.css_tag(tag))))
 
 # test has_text_content method
 print(" --- text 'has_text_content' function ---")
