@@ -92,13 +92,11 @@ def add_classes(tag, class_list):
             for new_class in class_list:
                 if new_class not in curr_classes:
                     tag['class'] += " " + new_class
-            #tag['class'] = tag['class'] + " " + " ".join(class_list)
         elif isinstance(curr_classes, list):
             # don't add dupes
             final_list = curr_classes
             final_list.extend(x for x in class_list if x not in final_list)
             tag['class'] = final_list
-            #tag['class'].extend(final_list)
         else:
             # use beautifulsoup4==4.11.1 if you use v 4.13.3 will hit this
             # because the types are different
@@ -165,49 +163,36 @@ def remove_classes(tag, class_list):
             tag['class'] = new_class_list
 
 
-'''
-Replaces *first* occurance of a String in a BeautifulSoup object
-with some other content.
-Content can be either another String, or another BeautifulSoup object
+def find_replace_str(soup, string, content, allow_empty=False):
 
-Use case example:
-----------------
-    * html doc with template vars %TITLE% or %MAIN-CONTENT%
-    * you generate that info somewhere else, then call this method to swap it in
-    beautiful_soup_utils.find_replace_str(my_soup, "%TITLE%, "my great title")
-    beautiful_soup_utils.find_replace_str(my_soup, "%MAIN-CONTENT%", my_soup_div)
+    """
+    replaces first occurance of a string in a BeautifulSoup object
+    with other content (either another string, or another beautifulsoup)
 
-Arguments:
-----------
-    soup:
-        BeautifulSoup object to search through
-    string:
-        String. String to replace
-    content:
-        String or BeautifulSoup object.
-        What you will replace String with.
+    use case:
+    html doc with template vars %TITLE% or %MAIN-CONTENT%
+    Generate that info elsewhere, then call this to swap it in
+      beautiful_soup_utils.find_replace_str(my_soup, "%TITLE%, "my great title")
+      beautiful_soup_utils.find_replace_str(my_soup, "%MAIN-CONTENT%", my_soup_div)
+
+    :param BeautifulSoup4 soup: object to replace string in
+    :param str string: string to replace
+    :param content: what to replace with
+    :type content: str or BeautifulSoup4
         (can be <class 'bs4.BeautifulSoup.tag'> or even
         <class 'bs4.BeautifulSoup'>)
-    allow_empty:
-        Boolean. Optional, defaults to False.
-        If True, don't raise exception if string not found in soup
+    :param bolean allow_empty: optional. if True, don't
+        raise Exception if string not found in soup
+    :return: None (modified soup permenantly)
 
-Returns:
---------
-    None; modifies the soup permenantly.
+    WARNING! ::
+    If content is BeauitulfSoup object,
+    will convert it to str then back to BeautifulSoup object
+    before adding to soup. This could permenantly modify the
+    type of attributes in content: example, if you set a boolean
+    attribute in content, it will be type String when it's done.
+    """
 
-Warnings:
---------
-    ** If content is BeauitulfSoup object,
-    will convert it to String, then back to BeautifulSoup object,
-    before adding in to soup as replacement for string.
-    This could change the type of attributes you're expecting;
-    i.e. if you had set a boolean attribute in content,
-    it will be type String when it's done.
-'''
-
-
-def find_replace_str(soup, string, content, allow_empty=False):
     found = soup.find(string=re.compile(string))
     '''
     soup.find with string arg will return a NavigableString
@@ -258,6 +243,13 @@ def js_tag(path):
 
 
 def css_tag(path):
+    """
+    returns a <link> tag (as BeautifulSoup object)
+    for a path
+
+    :param str path: path to put in the <link> tag
+    :return: BeautifulSoup4 object of <link> tag
+    """
     return BeautifulSoup('<link rel="stylesheet" href="' + path
                          + '" type="text/css">', "html.parser")
 
