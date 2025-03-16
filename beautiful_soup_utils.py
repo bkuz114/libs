@@ -415,7 +415,6 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True):
         formatter_val = preserve_nbsp_and_ru # cust func that preserves both
     elif preserve_nbsp:
         formatter_val = 'html' # preserves &nbsp; but mangles Cyrillic
-    print(formatter_val)
 
     soup_str = soup.prettify(formatter=formatter_val)
     return soup_str
