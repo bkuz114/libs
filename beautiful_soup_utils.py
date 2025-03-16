@@ -10,21 +10,21 @@ ENC = 'utf-8-sig'
 
 
 def has_text_content(tag):
-    '''
+    """
     check if a BeautifulSoup tag has text.
 
     :return: True if tag has text, False otherwise
 
     (@TODO: Ensure this is a Tag object?)
     see: https://stackoverflow.com/questions/61794102/how-to-remove-empty-p-tags-with-beautiful-soup-4
-    '''
+    """
     if len(tag.get_text(strip=True)) == 0:
         return False
     return True
 
 
 def get_next_tag_sibling(soup_tag):
-    '''
+    """
     Returns nearset right sibling that is a Tag object
     (NOT a NavigableString object)
     If right siblings exhausted before it reaches
@@ -41,7 +41,7 @@ def get_next_tag_sibling(soup_tag):
     The left and right siblings of the <hr> Tag are
     actually \n chars that are NavigableStrings, not
     the <br> tags, as one might expect...
-    '''
+    """
 
     curr_tag = soup_tag
     next_sib = None
@@ -54,6 +54,10 @@ def get_next_tag_sibling(soup_tag):
 
 
 def get_prev_tag_sibling(soup_tag):
+    """
+    see func doc for get_next_tag_sibling;
+    this is reverse
+    """
     curr_tag = soup_tag
     prev_sib = None
     while True:
@@ -65,7 +69,7 @@ def get_prev_tag_sibling(soup_tag):
 
 
 def add_classes(tag, class_list):
-    '''
+    """
     add css classes to a BeautifulSoup tag.
     (if a class is already present, won't add it)
     This helper method is useful because a tag's 'class'
@@ -75,7 +79,7 @@ def add_classes(tag, class_list):
     :param BeautifulSoup4 tag: tag to add classes to
     :param list class_list: css classes to add (as strings)
     :returns: None (Permenantly modifies tag)
-    '''
+    """
 
     if 'class' in tag.attrs:
         '''
@@ -104,12 +108,12 @@ def add_classes(tag, class_list):
 
 
 def get_classes(tag):
-    '''
+    """
     Return list of css classes in a BeautifulSoup tag
 
     :param BeautifulSoup4 tag: soup to get classes from
     :return: the list of css classes in tag (strings)
-    '''
+    """
     classes = []
     if 'class' in tag.attrs:
         '''
@@ -129,7 +133,7 @@ def get_classes(tag):
 
 
 def remove_classes(tag, class_list):
-    '''
+    """
     Remove css classes from a BeautifulSoup tag
 
     :param BeautifulSoup. element to remove classes from
@@ -137,7 +141,7 @@ def remove_classes(tag, class_list):
         classes to remove. (note: if a class isn't
         found in tag, it's ok)
     :returns: None. modifications to tag are permenant.
-    '''
+    """
 
     new_class_list = []
     if 'class' in tag.attrs:
@@ -444,7 +448,6 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True):
 
 def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
                        preserve_nbsp=True):
-
     """
     write a BeautifulSoup object to a file (prettified)
 
