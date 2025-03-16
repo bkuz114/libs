@@ -164,7 +164,6 @@ def remove_classes(tag, class_list):
 
 
 def find_replace_str(soup, string, content, allow_empty=False):
-
     """
     replaces first occurance of a string in a BeautifulSoup object
     with other content (either another string, or another beautifulsoup)
@@ -375,7 +374,7 @@ def make_soup_from_file(filepath):
     return soup
 
 
-def preserve_nbsp_and_ru(str):
+def preserve_nbsp_and_ru(string):
     """
     custom formatter for BeautifulSoup prettify.
     preserves both &nbsp and Cyrillic chars.
@@ -397,7 +396,7 @@ def preserve_nbsp_and_ru(str):
                 [but docs warn it can generate bad HTML]
             (5) custom function.
 
-    See this SO I posted about this:
+    SO I posted about this:
     https://stackoverflow.com/questions/69790205/prettify-with-beautifulsoup-using-a-formatter-that-will-preserve-nbsp-and-cyril/69790637#69790637
     """
 
@@ -405,8 +404,8 @@ def preserve_nbsp_and_ru(str):
     # split on nbsp
     # (&nbsp are parsed in BS as \xa0)
     # (https://stackoverflow.com/questions/66895175/beautifulsoup-find-tag-with-text-containing-nbsp)
-    split_str = str.split('\xa0')
-    # (this will split a&nbspb&nsbp&c --> [a,b,c])
+    split_str = string.split('\xa0')
+    # (this will split a&nbsp;b&nsbp;&c --> [a,b,c])
     for i, space_between in enumerate(split_str):
         # space_between will be regular text
         newstr += space_between
