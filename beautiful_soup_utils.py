@@ -165,7 +165,7 @@ def remove_classes(tag, class_list):
 
 def find_replace_str(soup, string, content, allow_empty=False):
     """
-    replaces first occurance of a string in a BeautifulSoup object
+    replace first occurance of a string in a BeautifulSoup object
     with other content (either another string, or another beautifulsoup)
 
     use case:
@@ -182,7 +182,7 @@ def find_replace_str(soup, string, content, allow_empty=False):
         <class 'bs4.BeautifulSoup'>)
     :param bolean allow_empty: optional. if True, don't
         raise Exception if string not found in soup
-    :return: None (modified soup permenantly)
+    :return: True on success, False if didn't find string
 
     WARNING! ::
     If content is BeauitulfSoup object,
@@ -216,8 +216,27 @@ def find_replace_str(soup, string, content, allow_empty=False):
         found_replaced = found_string.replace(string, str(content))
         found_replaced = BeautifulSoup(found_replaced, 'html.parser')
         found.replace_with(found_replaced)
-    elif not allow_empty:
-        raise Exception("Can't find string {} in soup!".format(string))
+        return True
+    else:
+        if allow_empty:
+            return False
+        else:
+            raise Exception("Can't find string {} in soup!".format(string))
+
+
+def replace_all(soup, string, content):
+    """
+    replace all occurrances of a string in a bs object
+    with something else (another string, or content)
+
+    :param BeautifulSoup4 soup: object to replace string in
+    :param str string: string to replace
+    :param content: what to replace with
+    :type content: str, bs4.BeautifulSoup, or bs4.BeautifulSoup.tag
+    :return: None (modified soup permenantly)
+    """
+    while find_replace_str(soup, string, content, True):
+        continue
 
 
 '''
