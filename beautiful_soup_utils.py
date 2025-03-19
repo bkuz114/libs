@@ -239,15 +239,6 @@ def replace_all(soup, string, content):
         continue
 
 
-'''
-doesn't work yet
-'''
-def replace_all_occurances_in_doc(soup, find, replace_with):
-    matches = soup.find_all(text=re.compile(find))
-    for mmatch in matches:
-        mmatch.replace_with(replace_with)
-
-
 def js_tag(path):
     """
     returns a <script> tag (as BeautifulSoup object)
