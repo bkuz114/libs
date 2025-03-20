@@ -5,33 +5,18 @@ import shutil
 ENC = 'utf-8'
 
 
-'''
-Takes a filepath, and checks if
-absolute or relative. If relative,
-evluates relative to a given path.
-Normalizes before returning in
-case it contains a combination of
-Unix and Windows path separators.
-
-Returns the normalized, absolute
-version of the filepath.
-
-path:
-    String. The path to evalute
-relTo:
-    String: Path to evluate relative
-    to, in case path is relative.
-
-Note: if neither path nor relTo
-are absolute, error is thrown.
-
-ex:
-    absolute("../b.txt", "C:\\Users\\Boris\\Desktop")
-    --> "C:\\Users\\Boris\\b.txt"
-'''
-
-
 def absolute(path, relTo):
+    """
+    Makes a filepath absolute (and normalizes path separators).
+
+    :param str path: path to make absolute
+    :param str relTo: if path is relative, creates
+        the abs path relative to this path.
+    :return: str. the normalized, absolute path.
+    :example:
+        absolute("../b.txt", "C:\\Users\\Boris\\Desktop")
+        returns: "C:\\Users\\Boris\\b.txt"
+    """
     if not path:
         raise Exception("\n\nERROR: io_utils:absolute: "
                         "Path to convert to absolute is "
@@ -55,100 +40,62 @@ def absolute(path, relTo):
     return os.path.normpath(path)
 
 
-'''
-helper function to
-get a file extension,
-since I'm always forgetting
-hot to call it...
-
-file_ext("a.txt")
-    returns "txt"
-file_ext("b")
-    returns ""
-'''
-
-
 def file_ext(path):
+    """
+    return file extension from a path
+    :param str path: path to get file ext from
+    :return: str. the file extension (if file
+        has no extension, returns "")
+    :example:
+        file_ext("a.txt")
+            returns "txt"
+        file_ext("b")
+            returns ""
+    """
     file_ext = os.path.splitext(path)[1]
-    # if there's an extension,
-    # returns it WITH the .
-    # i.e. file_ext = ".txt"
-    # want to remove the .
+    # remove . char from extension
     if file_ext:
         return file_ext[1:]
     return ""
 
 
-'''
-copy a path (a file or folder)
-to a destination.
-
-determines if src is a file or folder
-and calls appropriate function
-(copy_file or copy_folder_recursively)
-see those functions for details on
-what they do.
-
-src:
-    String. absolute path of file or
-    folder to copy
-dest:
-    String. absolute path of destination
-    to copy to.
-    in case where src is a file:
-        dest can be either a file or a folder.
-        if a file, will copy src to that
-        filepath (i.e. cp src dest)
-        if folder, will copy src INTO the
-        folder.
-    in case where src is a folder:
-        dest must be a folder.
-        see function declaration for
-        'copy_folder_recursively' to see
-        how dest is handled (it will get
-        passed to that function as the dest
-        option)
-force:
-    (only used when path is a file)
-    boolean.
-    if both path and dest are files, and
-    dest file exists:
-    if force is True, will overwrite dest
-    with src.
-    if force is False, will fail.
-explode:
-    (only used when path is a directory)
-    boolean.
-    if True, explodes contents of path
-    directly into dest dir, rather than
-    copying
-    the source folder itself.
-    i.e. src = a/b/c, dest=d/e/f
-    if explode=True, the contents of
-    folder "c" get copied directly into
-    d/e/f
-    if explode=False, the folder "c"
-    itself gets copied info d/e/f
-    (so you end up with d/e/f/c)
-assume_dir:
-    (only used when path is a file)
-    boolean.
-    See 'copy_file' function declaration
-    for explanation.
-    ** READ IT - IT'S NOT OBVIOUS **
-glob_ignore:
-    (only used when path is a directory)
-    list of Strings - glob patterns -
-    for files to ignore in the src directory
-    to ignore.
-    e.g. glob_ignore=["*.txt", "*.fs"]
-    when doing the copy of src, would ignore
-    any files with extensions .txt or .fs
-'''
-
-
 def copy_path(src, dest, force=False, explode=False, assume_dir=True,
               glob_ignore=[]):
+    """
+    copy a file or directory to a destination
+
+    :param str src: abs path of file or folder to copy
+    :param str dest: abs path of dest to copy to
+        if src is a file:
+            dest can be either file or folder.
+            if a file, will copy src to that
+            filepath (i.e. cp src dest)
+            if folder, will copy src INTO dest.
+        if src is a folder:
+            dest must be a folder.
+            see function declaration for
+            'copy_folder_recursively' to see
+            how dest is handled (it will get
+            passed to that function as the dest
+            option)
+    :param boolean force: overwrite if dest exists.
+    :param boolean explode: explode contents of src into
+        dest, rather than copying the source folder itself.
+        (only used when src is a directory)
+        i.e. src=a/b/c, dest=d/e/f, (and both c and f are dirs)
+        if explode=True, contents of "c" copied directly into d/e/f
+        if explode=False, "c" itself gets copied info d/e/f
+        (so you end up with d/e/f/c)
+    :param boolean assume_dir:
+        (only used when src is a file)
+        See 'copy_file' function for explanation.
+        ** READ IT - IT'S NOT OBVIOUS **
+    :param list[str] glob_ignore: list of glob pattersn
+        of files to ignore in src dir when copying.
+        (only used when src is a directory)
+        e.g. glob_ignore=["*.txt", "*.fs"]
+        when copying src, dont files with extensions .txt or .fs
+    """
     if not os.path.isabs(src) or not os.path.isabs(dest):
         raise Exception("ERROR io_utils:copy_path: "
                         "src or dest are not absolute")
@@ -166,35 +113,22 @@ def copy_path(src, dest, force=False, explode=False, assume_dir=True,
                          "src: {}").format(src))
 
 
-'''
-copy list of paths (can be files
-or folders) to a destination.
-
-paths:
-    list of Strings.
-    Absolute paths of files or
-    directories to copy.
-
-** remaining options, see
-function declaration of 'copy_path'
-for expalatnions **
-
-'''
-
-
 def copy_paths(paths, dest, force=False, explode=False, assume_dir=True,
                glob_ignore=[]):
+    """
+    copy list of paths -- files or folders -- to a destination.
+    :param list[str] paths: abs paths of files or dirs to copy
+    -- for remaining options, see 'copy_path' function --
+    """
     for path in paths:
         copy_path(path, dest, force, explode, assume_dir, glob_ignore)
 
 
-'''
-filepath: absolute path to a file.
-Reads text content and returns as String
-'''
-
-
 def get_file_as_str(filepath):
+    """
+    return file contents of a file as a string
+    :param str filepath: abs path to a file
+    """
     if not os.path.isabs(filepath):
         sys.exit(("ERROR: (io_utils): can't read {}, "
                   "path is not absolute!").format(filepath))
@@ -208,15 +142,13 @@ def get_file_as_str(filepath):
     return file_str
 
 
-'''
-filepath: absolute path to a file.
-Writes string to file at specified path.
-Makes dirs in path if they do not exist.
-force arg allows overwrite if file exists
-'''
-
-
 def write_str_to_file(string, filepath, force):
+    """
+    writes a string to a file
+    :param str string: the data to write to the file
+    :param str filepath: abs path to write file to
+    :param boolean force: overwrite if filepath exists
+    """
     if not os.path.isabs(filepath):
         sys.exit(("ERROR: (io_utils:write_str_to_file) "
                   "Output file not absolute! "
@@ -240,44 +172,25 @@ def write_str_to_file(string, filepath, force):
     wr.close()
 
 
-'''
-copy a file to a destination;
-
-src:
-    String. absolute path of file to copy
-dest:
-    String. absolute path to copy to.
-    Can be either file or folder.
-
-    if file: will copy file to this location.
-    (if dest file already exists, will fail
-    unless Force=True)
-
-    if directory: will copy file into the
-    directory. If dir doesn't exist,
-    Will create it and any intermediary dirs
-force:
-    boolean
-    if dest is a file and file exists:
-    if force=True, will overwrist dest with src
-    if force=False, will fail with message.
-assume_dir:
-    if dest doesn't exist, and no extension given,
-    there's no way to determine whether dest
-    intended as a directory or file (could be you
-    want it to be a file with no extension).
-    if this option is True, will assume you
-    intended for dest to be a folder and will
-    create it and then copy src into the folder.
-    else will assume it's meant to be a file
-    with no extension and will copy it to file
-
-ex: copy_file("a/b/c.txt", "a/b/d.txt")
-copies file a/b/c.txt to a/b/d.txt
-'''
-
-
 def copy_file(src, dest, force=False, assume_dir=True):
+    """
+    copy a file to a destination (either a file or a dir)
+
+    :param str src: abs path of file to copy
+    :param str dest: abs path for destination
+        dest can be either file or directory.
+        if dir: copy src into dest. If dir
+        doesn't exist, will create it and any
+        intermediary dirs.
+    :param boolean force: for case where dest is
+        a file, overwrite if file already exists
+    :param boolean assume_dir: assume dest is a dir
+        in the case dest doesn't exist, and no ext given
+        (see above for how 'dest' works when dest is a dir)
+    :example:
+        copy_file("a/b/c.txt", "a/b/d.txt")
+        copies file a/b/c.txt to a/b/d.txt
+    """
     if not os.path.isabs(src) or not os.path.isabs(dest):
         raise Exception("ERROR io_utils:copy_file: "
                         "src or dest are not absolute")
@@ -313,20 +226,15 @@ def copy_file(src, dest, force=False, assume_dir=True):
     shutil.copy(src, dest)
 
 
-'''
-copies list of filepaths to a dest folder.
-(For each file in files, creates a file wit
-identical basename in dest)
-optional arg force allows copy to continue
-if any of the resulting dest files exists.
-
-- dest and all src files should be abs paths
-(if src file isn't abs, will only fail once copy_file
-is called)
-'''
-
-
 def copy_files(files, dest, force=False):
+    """
+    copy a list of files to a dest folder
+
+    :param list[str] files: list of abs paths ofr files to copy
+    :param str dest: abs path of dest folder to copy files to
+    :return: None
+    """
+
     if not os.path.isabs(dest):
         raise Exception("ERROR io_utils:copy_files: dest dir "
                         "is not absolute! {}".format(dest))
@@ -344,36 +252,29 @@ def copy_files(files, dest, force=False):
         copy_file(file, dest, force, True)
 
 
-'''
-Takes abs path to <src> dir and <dest> dir, and
-cp -r <src> <dest>
-overwrites <dest>/<src> if exists
-
-Optional arg explode will explode the dir
-in to dest, i.e.
-cp -r <src>/. <dest>
-
-glob_ignore:
-    list of Strings: glob patterns for files
-    to ignore.
-    ex. glob_ignore=["*.txt", "*.fs"]
-    would ignore any files with extensions
-    .txt or .fs
-
-Example:
-if you have folder a/b/c
-and you want to copy 'c' and contents to
-path a/d/e/f,
-  copy_folder_recursively('a/b/c', 'a/d/e/f')
-results in:
-    a/d/e/f/c
-  copy_folder_recursively('a/b/c', a/d/e/f', explode=True)
-results in
-    contents of 'a/b/c' copied directly in to a/d/e/f
-'''
-
-
 def copy_folder_recursively(src, dest, explode=False, glob_ignore=[]):
+    """
+    recursively copies a directory INTO a dest dir.
+    essentially:
+        cp -r <src> <dest>
+        (overwrites <dest>/<src> if exists)
+
+    :param str src: abs path to src dir
+    :param str dest: abs path to dest dir to copy src INTO
+    :param boolean explode: optional. explode CONTENTS of
+        src into dest (rather than copying src itself into dest)
+    :param list[str] glob_ignore: optional. glob patterns for
+        files in src to ignore while copying.
+        ex. glob_ignore=["*.txt", "*.fs"]
+        will not copy any .txt or .fs files in src
+    :return: None
+    :example:
+        copy_folder_recursively('a/b/c', 'a/d/e/f')
+            results in: a/d/e/f/c
+        copy_folder_recursively('a/b/c', a/d/e/f', explode=True)
+            results in: contents of 'c' copied directly in to a/d/e/f
+    """
+
     if not os.path.isabs(src) or not os.path.isabs(dest):
         sys.exit("ERROR (io_utils:copy_folder_recursively): "
                  "can't copy folder - either src or dest "
@@ -407,40 +308,22 @@ def copy_folder_recursively(src, dest, explode=False, glob_ignore=[]):
                     ignore=shutil.ignore_patterns(*glob_ignore))
 
 
-'''
-copy_folders
-
-dirpaths:
-    List of Lists.
-    Each contains: [PATH [GLOBLIST]]
-    Where PATH is a directory to
-    copy, and [GLOBLIST] is a list of
-    Strings, representing glob patterns
-    for paths to exclude during the copy
-    operation for PATH.
-
-destpath:
-    String. Absolute path of
-    directory to copy dirpaths to
-
-general_globs:
-    List of Strings representing glob
-    patterns for paths to exclude in
-    the copy operation for EVERY folder
-    in dirpaths (in addition to any
-    specific globs a folder in dirpaths
-    may have)
-
-explode:
-    boolean. if true, the the contents
-    of the directories in dirpaths
-    will be copied directly into destpath
-    (rather than copying the folders them
-    selves)
-'''
-
-
 def copy_folders(dirpaths, destpath, general_globs=[], explode=False):
+    """
+    copy multiple folders into a destination directory.
+
+    :param list[list] dirpaths: the list of src dirs to copy.
+        Each inner list is: [path, [GLOBLIST]] where
+        path is a src dir to copy, and GLOBLIST
+        is list[str], a list of glob patterns for files
+        to exclude when copying path.
+    :param str destpath: abs pat of dir to copy src dirs into
+    :param list[str] general_globs: optional. list of glob
+        patterns to apply to ALL src dirs for ignoring files
+    :param boolean explode: explode contents of the src dirs
+        directly into destpath (rather than copying the folders
+        themselves into destpath)
+    """
 
     common_err_prefix = "\n\nio_utils:copy_folders:"
     common_err_msg = "\n(dirpaths should be a list of lists. " \
@@ -501,40 +384,28 @@ def copy_folders(dirpaths, destpath, general_globs=[], explode=False):
         copy_folder_recursively(dirpath, destpath, explode, globs)
 
 
-'''
-Takes a filepath (either path to a file, or path to a directory).
-If it's a file, creates parent directory recurisvely.
-If it's a directory, creates entire dirpath.
-returns True on success
-
-file:
-    String; the filepath to create
-
-assume_dir:
-    boolean
-    if filepath has no extension and doesn't
-    exist, there's ambiguity on if it's intended
-    to be a dir, or a file with no extension.
-    if assume_dir=True, will assume it's a
-    a dir and will create the full path given
-    by filepath.
-    if assume_dir=False, will assume it's a file
-    with no extension, and will only create the
-    path, up to it's parent directory
-
-Examples:
-    createPath("a/b/c.txt")
-        creates dirpath a/b
-    createPath("a/b/c/d")
-        creates dirpath a/b/c/d
-    createPath("a/b/c/d", assume_dir=False)
-        creates dirpath a/b/c
-
-Note: if the filepath already exists, it simply returns.
-'''
-
-
 def createPath(filepath, assume_dir=True):
+    """
+    Create a path on the local filesystem if it doesn't
+    already exist.
+
+    :param str file: filepath to create. can be file or dir.
+        if file, will create path up to PARENT dir (not the
+        file itself). If dir, will create the entire path.
+    :param boolean assume_dir: optional. assume filepath is
+        a dir, if there's no extension and path doesn't exist.
+    :return: True on success, or if filepath already exists.
+
+    examples:
+        createPath("a/b/c.txt")
+            creates dirpath a/b
+        createPath("a/b/c/d")
+            creates dirpath a/b/c/d
+        createPath("a/b/c/d", assume_dir=False)
+            creates dirpath a/b/c
+
+    Note: if the filepath already exists, it simply returns.
+    """
     if not os.path.isabs(filepath):
         raise Exception("\n\nio_utils:createPath: trying to "
                         "create directory path for {}, but "
@@ -575,35 +446,27 @@ def createPath(filepath, assume_dir=True):
         return True
 
 
-'''
-Return list of paths to all immediate files in a directory.
-Optional boolean arg names only returns names of the files (not full paths)
-
-Arguments:
-----------
-
-folder:
-    name of folder to list files in.
-    Does not need to be abspath.
-    if rel. path, should be be rel dir
-    where script that imported this script
-    is being called.
-    e.g.: script a.py in dir /a/b/c/ imports io_utils and calls
-    list_subdirs; you call a.py from /a/b/;
-    the rel path to 'folder' should be rel /a/b/
-
-names:
-    optional boolean. If True, only return names of the
-    files. If False, returns abs. paths to the files.
-
-throws exception if folder does not exist
-
-https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
- (answer by gahooa)
-'''
-
-
 def list_files(folder, names=False):
+    """
+    Return list of files in a directory.
+
+    :param str folder: name of folder to list files in
+        Does not need to be abspath.
+        if rel. path, should be be rel dir
+        where script that imported this script
+        is being called.
+        e.g.: script a.py in dir /a/b/c/ imports io_utils and calls
+        list_subdirs; you call a.py from /a/b/;
+        the rel path to 'folder' should be rel /a/b/
+    :param boolean names: optional. If True, return names of the
+        files. If False, returns abs. paths to the files.
+    :return: list[str]. files in the folder.
+        if names=True - only returns filenames
+        if names=False - abs paths to the filenames
+    """
+
+    # https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
+    # (answer by gahooa)
     files = []
     if names:
         files = [f.name for f in os.scandir(folder) if f.is_file()]
@@ -612,35 +475,26 @@ def list_files(folder, names=False):
     return files
 
 
-'''
-Return list of paths to all immediate subdirs in a directory.
-Optional boolean arg names only returns names of the dirs (not full paths)
-
-Arguments:
-----------
-
-folder:
-    name of folder to get subdirs of.
-    Does not need to be abspath.
-    if rel. path, should be be rel dir
-    where script that imported this script
-    is being called.
-    e.g.: script a.py in dir /a/b/c/ imports io_utils and calls
-    list_subdirs; you call a.py from /a/b/;
-    the rel path to 'folder' should be rel /a/b/
-
-names:
-    optional boolean. If True, only return names of the
-    dirs. If False, returns abs. paths to the dirs.
-
-throws exception if folder does not exist
-
-https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
- (answer by gahooa)
-'''
-
-
 def list_subdirs(folder, names=False):
+    """
+    return list of subdirs in a directory (not recursive)
+
+    :param str folder: name of folder to get subdirs of.
+        Does not need to be abspath.
+        If rel, should be rel dir where script that imported
+        this script is being called
+        e.g.: if a.py in /a/b/c/ imports io_utils and calls
+        list_subdirs; you call a.py from /a/b/;
+        the rel path to 'folder' should be rel /a/b/
+    :param boolean names: optional. if True, only return names
+        of the dirs (else it returns abs paths to the dirs)
+    :return: list[str]: the paths to immediate subdirs in folder
+        (if names=True, will be just names of the subdirs;
+        if names=False, will be abs paths to the subdirs)
+    """
+
+    # https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory
+    # (answer by gahooa)
     subfolders = []
     if names:
         subfolders = [f.name for f in os.scandir(folder) if f.is_dir()]
