@@ -24,6 +24,14 @@ def stdout(cmd, err_if_empty=False):
     return stdout
 
 
+def copy(container_name, src, dest):
+    """
+    copy a src file to dest on a container
+    """
+    if container_exists(container_name):
+        stdout(["docker", "cp", src, container_name + ":" + dest])
+
+
 def container_exists(container_name):
     """
     check if a Docker container of a given name exists
