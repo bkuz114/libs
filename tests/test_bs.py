@@ -93,6 +93,15 @@ for tag in css_tags:
     print("Make a css tag for path: " + tag)
     print("\t{}".format(str(beautiful_soup_utils.css_tag(tag))))
 
+# update paths in head tags
+rel = "../.."
+print("\n --- Update the head tags to be relative to " + rel)
+print("soup before:")
+print(bs.prettify())
+beautiful_soup_utils.update_paths(bs, rel)
+print("soup after:")
+print(bs.prettify())
+
 # test has_text_content method
 print(" --- text 'has_text_content' function ---")
 p_w_content = soup.new_tag("p")

@@ -356,6 +356,79 @@ def add_css_head_tags(soup, paths, startAt=None):
             link_tags[-1].insert_after(new_paths)
 
 
+def modify_path(path, rel):
+    """
+    Evaluates a path against some relative path.
+
+    :param str path: path to evaluate
+    :param str rel: a rel path to evaluate 'path' against
+    :return: str the evaluated path
+    :example:
+        path="./assets/css/style1.css"
+        rel="../../"
+        returns "../../assets/css/style1.css"
+    """
+    return os.path.normpath(rel + path)
+
+
+def update_path(tag, rel):
+    """
+    Updates the 'src' or 'href' attr in a BeautifulSoup4
+    tag to account for a relative path. (note: ignores
+    'href' attrs that are URLs)
+
+    :param BeautifulSoup4 tag: the tag to update
+    :param str rel: rel path to update 'href' or 'src' against
+    :return None: modifies tag permenantly
+    :example:
+        tag representing : <a href="./index.html">
+        rel = "../../"
+        updates tag to: <a href="../../index.html">
+    """
+    if tag.has_attr("src"):
+        updated_path = modify_path(tag['src'], rel)
+        tag['src'] = updated_path
+    elif tag.has_attr("href") and not (tag['href'].startswith("http") or
+                                       tag['href'].startswith("#")):
+        updated_path = modify_path(tag['href'], rel)
+        tag['href'] = updated_path
+
+
+def update_paths(soup, rel):
+    """
+    Updates paths in all <link>, <script>, and <a>
+    tags in a BeautifulSoup object to account for some
+    relative path.
+    Caution: Result depends on OS running script.
+
+
+    :param BeautifulSoup4 soup: the bs4 object to update
+    :param str rel: rel path to update paths against
+    :return: None (modifies soup permenantly)
+    :example:
+        for soup representing this page:
+            <head>
+                <link href="./assets/css/style1.css">
+                <script src="./assets/js/scripts.js">
+            </head>
+        rel="../"
+
+        modified soup (if running on POSIX system):
+            <head>
+                <link href="../assets/css/style1.css">
+                <script src="../assets/js/scripts.js">
+            </head>
+        modified soup (if running on Windows system):
+            <head>
+                <link href="..\\assets\\css\\style1.css">
+                <script src="..\\assets\\js\\scripts.js">
+            </head>
+    """
+    tags = soup.find_all(["link", "script", "a"])
+    for tag in tags:
+        update_path(tag, rel)
+
+
 def make_soup(html_str):
     """
     convert a string to a BeautifulSoup4 object
