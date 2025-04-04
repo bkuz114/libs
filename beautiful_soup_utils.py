@@ -440,14 +440,15 @@ def make_soup(html_str):
     return soup
 
 
-def make_soup_from_file(filepath):
+def make_soup_from_file(filepath, log=True):
     """
     convert a file to a beautifulSoup4 object
 
     :param str filepath: absolute path to file to read
+    :param boolean log: print steps to stdout
     :return: BeautifulSoup4 object for data in the file
     """
-    print(("\t\tbeautiful_soup_utils: Generate soup from file "
+    if log: print(("\t\tbeautiful_soup_utils: Generate soup from file "
            "\n\t\t\t{}").format(filepath))
     if not os.path.abspath(filepath):
         raise Exception(
@@ -552,7 +553,7 @@ def collapse_tags(html, tag):
 
 
 def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
-                       preserve_nbsp=True, taglist=[]):
+                       preserve_nbsp=True, taglist=[], log=True):
     """
     write a BeautifulSoup object to a file (prettified)
 
@@ -567,9 +568,10 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
     :param list[str] taglist: optional list of tags to
         collapse whitespace chars inside of during prettify
         i.e. ["h1", "span", "em"]
+    :param boolean log: print steps to stdout
     :return: None
     """
-    print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}")
+    if log: print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}")
           .format(output_filename))
     pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp, taglist)
     io_utils.write_str_to_file(pretty_soup, output_filename, force)
