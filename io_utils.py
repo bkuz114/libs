@@ -40,138 +40,6 @@ def absolute(path, relTo):
     return os.path.normpath(path)
 
 
-def file_ext(path):
-    """
-    return file extension from a path
-    :param str path: path to get file ext from
-    :return: str. the file extension (if file
-        has no extension, returns "")
-    :example:
-        file_ext("a.txt")
-            returns "txt"
-        file_ext("b")
-            returns ""
-    """
-    file_ext = os.path.splitext(path)[1]
-    # remove . char from extension
-    if file_ext:
-        return file_ext[1:]
-    return ""
-
-
-def copy_path(src, dest, force=False, explode=False, assume_dir=True,
-              glob_ignore=[]):
-    """
-    copy a file or directory to a destination
-
-    :param str src: abs path of file or folder to copy
-    :param str dest: abs path of dest to copy to
-        if src is a file:
-            dest can be either file or folder.
-            if a file, will copy src to that
-            filepath (i.e. cp src dest)
-            if folder, will copy src INTO dest.
-        if src is a folder:
-            dest must be a folder.
-            see function declaration for
-            'copy_folder_recursively' to see
-            how dest is handled (it will get
-            passed to that function as the dest
-            option)
-    :param boolean force: overwrite if dest exists.
-    :param boolean explode: explode contents of src into
-        dest, rather than copying the source folder itself.
-        (only used when src is a directory)
-        i.e. src=a/b/c, dest=d/e/f, (and both c and f are dirs)
-        if explode=True, contents of "c" copied directly into d/e/f
-        if explode=False, "c" itself gets copied info d/e/f
-        (so you end up with d/e/f/c)
-    :param boolean assume_dir:
-        (only used when src is a file)
-        See 'copy_file' function for explanation.
-        ** READ IT - IT'S NOT OBVIOUS **
-    :param list[str] glob_ignore: list of glob pattersn
-        of files to ignore in src dir when copying.
-        (only used when src is a directory)
-        e.g. glob_ignore=["*.txt", "*.fs"]
-        when copying src, dont files with extensions .txt or .fs
-    """
-    if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise Exception("ERROR io_utils:copy_path: "
-                        "src or dest are not absolute")
-    if not os.path.exists(src):
-        raise Exception(("ERROR io_utils:copy_path: "
-                         "src to copy doesn't exist! src: {}").format(src))
-
-    if os.path.isdir(src):
-        copy_folder_recursively(src, dest, explode, glob_ignore)
-    elif os.path.isfile(src):
-        copy_file(src, dest, force, assume_dir)
-    else:
-        raise Exception(("ERROR io_utils:copy_path: "
-                         "src not file or dir according to python.. "
-                         "src: {}").format(src))
-
-
-def copy_paths(paths, dest, force=False, explode=False, assume_dir=True,
-               glob_ignore=[]):
-    """
-    copy list of paths -- files or folders -- to a destination.
-    :param list[str] paths: abs paths of files or dirs to copy
-    -- for remaining options, see 'copy_path' function --
-    """
-    for path in paths:
-        copy_path(path, dest, force, explode, assume_dir, glob_ignore)
-
-
-def get_file_as_str(filepath):
-    """
-    return file contents of a file as a string
-    :param str filepath: abs path to a file
-    """
-    if not os.path.isabs(filepath):
-        sys.exit(("ERROR: (io_utils): can't read {}, "
-                  "path is not absolute!").format(filepath))
-    if not os.path.exists(filepath):
-        sys.exit(("ERROR: (io_utils): Can't read {}; "
-                  "file does not exist!").format(filepath))
-
-    file = open(filepath, "r", encoding=ENC)
-    file_str = file.read()
-    file.close()
-    return file_str
-
-
-def write_str_to_file(string, filepath, force):
-    """
-    writes a string to a file
-    :param str string: the data to write to the file
-    :param str filepath: abs path to write file to
-    :param boolean force: overwrite if filepath exists
-    """
-    if not os.path.isabs(filepath):
-        sys.exit(("ERROR: (io_utils:write_str_to_file) "
-                  "Output file not absolute! "
-                  "(Output file: {})").format(filepath))
-
-    if os.path.exists(filepath) and not force:
-        sys.exit(("ERROR (io_utils:write_str_to_file): Output "
-                  "file {} exists "
-                  "(your script should call this function with "
-                  "force=True)").format(filepath))
-    # create dirs in path if they don't exist
-    basedir = os.path.dirname(filepath)
-    if not os.path.exists(basedir):
-        os.makedirs(basedir)
-
-    if force:
-        wr = open(filepath, "w", encoding=ENC)
-    else:
-        wr = open(filepath, "x", encoding=ENC)
-    wr.write(string)
-    wr.close()
-
-
 def copy_file(src, dest, force=False, assume_dir=True):
     """
     copy a file to a destination (either a file or a dir)
@@ -384,6 +252,71 @@ def copy_folders(dirpaths, destpath, general_globs=[], explode=False):
         copy_folder_recursively(dirpath, destpath, explode, globs)
 
 
+def copy_path(src, dest, force=False, explode=False, assume_dir=True,
+              glob_ignore=[]):
+    """
+    copy a file or directory to a destination
+
+    :param str src: abs path of file or folder to copy
+    :param str dest: abs path of dest to copy to
+        if src is a file:
+            dest can be either file or folder.
+            if a file, will copy src to that
+            filepath (i.e. cp src dest)
+            if folder, will copy src INTO dest.
+        if src is a folder:
+            dest must be a folder.
+            see function declaration for
+            'copy_folder_recursively' to see
+            how dest is handled (it will get
+            passed to that function as the dest
+            option)
+    :param boolean force: overwrite if dest exists.
+    :param boolean explode: explode contents of src into
+        dest, rather than copying the source folder itself.
+        (only used when src is a directory)
+        i.e. src=a/b/c, dest=d/e/f, (and both c and f are dirs)
+        if explode=True, contents of "c" copied directly into d/e/f
+        if explode=False, "c" itself gets copied info d/e/f
+        (so you end up with d/e/f/c)
+    :param boolean assume_dir:
+        (only used when src is a file)
+        See 'copy_file' function for explanation.
+        ** READ IT - IT'S NOT OBVIOUS **
+    :param list[str] glob_ignore: list of glob pattersn
+        of files to ignore in src dir when copying.
+        (only used when src is a directory)
+        e.g. glob_ignore=["*.txt", "*.fs"]
+        when copying src, dont files with extensions .txt or .fs
+    """
+    if not os.path.isabs(src) or not os.path.isabs(dest):
+        raise Exception("ERROR io_utils:copy_path: "
+                        "src or dest are not absolute")
+    if not os.path.exists(src):
+        raise Exception(("ERROR io_utils:copy_path: "
+                         "src to copy doesn't exist! src: {}").format(src))
+
+    if os.path.isdir(src):
+        copy_folder_recursively(src, dest, explode, glob_ignore)
+    elif os.path.isfile(src):
+        copy_file(src, dest, force, assume_dir)
+    else:
+        raise Exception(("ERROR io_utils:copy_path: "
+                         "src not file or dir according to python.. "
+                         "src: {}").format(src))
+
+
+def copy_paths(paths, dest, force=False, explode=False, assume_dir=True,
+               glob_ignore=[]):
+    """
+    copy list of paths -- files or folders -- to a destination.
+    :param list[str] paths: abs paths of files or dirs to copy
+    -- for remaining options, see 'copy_path' function --
+    """
+    for path in paths:
+        copy_path(path, dest, force, explode, assume_dir, glob_ignore)
+
+
 def createPath(filepath, assume_dir=True):
     """
     Create a path on the local filesystem if it doesn't
@@ -446,6 +379,43 @@ def createPath(filepath, assume_dir=True):
         return True
 
 
+def file_ext(path):
+    """
+    return file extension from a path
+    :param str path: path to get file ext from
+    :return: str. the file extension (if file
+        has no extension, returns "")
+    :example:
+        file_ext("a.txt")
+            returns "txt"
+        file_ext("b")
+            returns ""
+    """
+    file_ext = os.path.splitext(path)[1]
+    # remove . char from extension
+    if file_ext:
+        return file_ext[1:]
+    return ""
+
+
+def get_file_as_str(filepath):
+    """
+    return file contents of a file as a string
+    :param str filepath: abs path to a file
+    """
+    if not os.path.isabs(filepath):
+        sys.exit(("ERROR: (io_utils): can't read {}, "
+                  "path is not absolute!").format(filepath))
+    if not os.path.exists(filepath):
+        sys.exit(("ERROR: (io_utils): Can't read {}; "
+                  "file does not exist!").format(filepath))
+
+    file = open(filepath, "r", encoding=ENC)
+    file_str = file.read()
+    file.close()
+    return file_str
+
+
 def list_files(folder, names=False):
     """
     Return list of files in a directory.
@@ -501,3 +471,33 @@ def list_subdirs(folder, names=False):
     else:
         subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
     return subfolders
+
+
+def write_str_to_file(string, filepath, force):
+    """
+    writes a string to a file
+    :param str string: the data to write to the file
+    :param str filepath: abs path to write file to
+    :param boolean force: overwrite if filepath exists
+    """
+    if not os.path.isabs(filepath):
+        sys.exit(("ERROR: (io_utils:write_str_to_file) "
+                  "Output file not absolute! "
+                  "(Output file: {})").format(filepath))
+
+    if os.path.exists(filepath) and not force:
+        sys.exit(("ERROR (io_utils:write_str_to_file): Output "
+                  "file {} exists "
+                  "(your script should call this function with "
+                  "force=True)").format(filepath))
+    # create dirs in path if they don't exist
+    basedir = os.path.dirname(filepath)
+    if not os.path.exists(basedir):
+        os.makedirs(basedir)
+
+    if force:
+        wr = open(filepath, "w", encoding=ENC)
+    else:
+        wr = open(filepath, "x", encoding=ENC)
+    wr.write(string)
+    wr.close()
