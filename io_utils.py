@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import stat
 
 ENC = 'utf-8'
 
@@ -471,6 +472,41 @@ def list_subdirs(folder, names=False):
     else:
         subfolders = [f.path for f in os.scandir(folder) if f.is_dir()]
     return subfolders
+
+
+def remove(path, failIfNotExists=False):
+    """
+    remove a path on the local file system.
+    if removal fails due to being read only,
+    changes permissions and tries again.
+
+    :param str path: path to remove
+    :param bool failIfNotExists: throws Exception
+        if path trying to remove doesn't exist
+    """
+
+    if not os.path.isabs(path):
+        raise Exception("Path to remove is not absolute {}".format(path))
+    if not os.path.exists(path) and failIfNotExists:
+        raise Exception("Path to remove does not exist {}".format(path))
+
+    def make_dir_writable(function, path, exception):
+        """The path on Windows cannot be gracefully removed due to
+        being read-only, so we make the directory writable on a
+        failure and retry the original function.
+
+        adding due to
+        winerror5 shutil rmtree_unsafe "access is denied"
+        error that was occuring in mybackups when trying
+        to remove the temp staging dir that was created
+        see:
+        https://stackoverflow.com/questions/19728852/shutil-rmtree-raises-exception-windowserror-access-is-denied
+        """
+        os.chmod(path, stat.S_IWRITE)
+        function(path)
+
+    if os.path.exists(path):
+        shutil.rmtree(path, onerror=make_dir_writable)
 
 
 def write_str_to_file(string, filepath, force):

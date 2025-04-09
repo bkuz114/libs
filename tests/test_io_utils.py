@@ -6,7 +6,7 @@ usage:
 
     --tests
         specify which tests to run
-        (valid : 1, 2, 3, 4, or 5)
+        (valid : 1, 2, 3, 4, 5, 6, 7)
         You can specify multiple tests as follows:
         --tests 1 3 5
 
@@ -27,6 +27,7 @@ import sys
 import os
 import shutil
 import argparse
+from stat import S_IREAD, S_IRGRP, S_IROTH
 sys.path.append("..")
 import io_utils
 from pathlib import Path
@@ -65,7 +66,8 @@ def test_teardown():
     print("\n\n ------- TEST TEARDOWN -----")
     print("(1) Remove mydir if still exists")
     if os.path.exists(mydir) and os.path.isdir(mydir):
-        shutil.rmtree(mydir)
+        io_utils.remove(mydir)
+        #shutil.rmtree(mydir)
 
     def rmfile(myfile):
         if os.path.exists(myfile) and os.path.isfile(myfile):
@@ -80,7 +82,7 @@ def test_teardown():
 
 def main(args):
 
-    valid_tests = ["1", "2", "3", "4", "5"]
+    valid_tests = ["1", "2", "3", "4", "5", "6", "7"]
 
     parser = argparse.ArgumentParser(
         description='Test cases for io_utils.py',
@@ -117,6 +119,10 @@ def main(args):
                 testcase_4()
             case "5":
                 testcase_5()
+            case "6":
+                testcase_6()
+            case "7":
+                testcase_7()
 
     # test teardown
     test_teardown()
@@ -220,6 +226,44 @@ def testcase_5():
 
     print_step("Remove directory 'midir")
     shutil.rmtree(mydir)
+
+
+def testcase_6():
+    print_testcase("Test functions: 'createPath' and 'remove'\n"
+                   "1. Create directory mydir in current directory\n"
+                   "2. Remove the directory "
+                   "and see it succeeds", 6)
+
+    print_step("Create 'mydir' in current dir")
+    io_utils.createPath(mydir)
+
+    print_step("Remove directory 'midir")
+    io_utils.remove(mydir)
+
+
+def testcase_7():
+    print_testcase("Test function: 'remove'\n"
+                   "1. Create directory mydir in current directory\n"
+                   "2. Make mydir readonly\n"
+                   "3. Try to remove with shutil and ensure failure\n"
+                   "4. Try to remove with 'remove' and ensure success,\n"
+                   "   even though it's read only", 7)
+
+    print_step("Create 'mydir' in current dir")
+    io_utils.createPath(mydir)
+
+    print_step("Make 'mydir' readonly")
+    os.chmod(mydir, S_IREAD|S_IRGRP|S_IROTH)
+
+    print_step("Try to remove with shutil and make sure fails due to read only permissions")
+    try:
+        shutil.rmtree(mydir)
+        print("shutil.rmtree didn't fail!! I shouldn't be here!")
+    except PermissionError as e:
+        print("shutil.rmtree failed on permission error, as expected. Error message:" + str(e))
+
+    print_step("Remove directory via 'remove' function; should succeed even with RO perms")
+    io_utils.remove(mydir)
 
 
 if __name__ == "__main__":
