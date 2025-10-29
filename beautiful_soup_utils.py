@@ -578,8 +578,26 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
     for tag in taglist:
         soup_str = collapse_tags(soup_str, tag)
     if remove_trailing_backslash:
-        soup_str = soup_str.replace("/>", ">")
+        soup_str = fix_void_tags(soup_str)
     return soup_str
+
+
+def fix_void_tags(html):
+    """
+    remove trailing "/" on void tags
+    (BeautifulSoup adds / to end of void tags at prettify, i.e. <br/>,
+    unless formatter=html5 or formatter=None, but they mangle Cryrillic.
+    So, adding function to remove trailing / on void tags only.)
+    Note: do NOT remove all /> - that's valid to close non-void tags,
+    and can mangle your HTML (e.g. <path> as subset of <svg>)
+    """
+    void_tags = ["area", "base", "br", "col", "embed",
+                 "hr", "img", "input", "link", "meta",
+                 "param", "source", "track", "wbr"]
+    for tag in void_tags:
+        closing_slash_reg = re.compile(f'<{tag}(.*)/>')
+        html = closing_slash_reg.sub(f'<{tag}\\1>', html)
+    return html
 
 
 def collapse_tags(html, tag):
