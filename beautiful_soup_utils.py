@@ -429,6 +429,53 @@ def update_paths(soup, rel):
         update_path(tag, rel)
 
 
+def update_path_unix(tag):
+    """
+    If tag has href or src attr, converts
+    any file seperators for the operating
+    system to / file separators
+
+    :param BeautifulSoup4 tag: the tag to update
+    :return None: modifies tag permenantly
+    """
+    if tag.has_attr("src"):
+        updated_path = unix_filepath(tag['src'])
+        tag['src'] = updated_path
+    elif tag.has_attr("href") and not (tag['href'].startswith("http") or
+                                       tag['href'].startswith("#")):
+        updated_path = unix_filepath(tag['href'])
+        tag['href'] = updated_path
+
+
+def update_paths_unix(soup):
+    """
+    Updates paths in all <link>, <script>, and <a>
+    tags in a BeautifulSoup object so that they are
+    in Unix filenotation. (Windows \ separators
+    will result in w3 validation errors)
+
+    :param BeautifulSoup4 soup: the bs4 object to update
+    :return: None (modifies soup permenantly)
+    """
+    tags = soup.find_all(["link", "script", "a"])
+    for tag in tags:
+        update_path_unix(tag)
+
+
+def unix_filepath(path):
+    """
+    In a string, replace all path separators
+    of the OS to Unix path separator
+
+    :param String path: Stirng to replace
+        file seperators in
+    :return String: path with any occurances
+        of the native OS's file path seperators
+        to /
+    """
+    return path.replace(os.sep, "/")
+
+
 def make_soup(html_str):
     """
     convert a string to a BeautifulSoup4 object
