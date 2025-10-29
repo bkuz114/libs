@@ -554,7 +554,8 @@ def preserve_nbsp_and_ru(string):
     return newstr
 
 
-def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[]):
+def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
+        remove_trailing_backslash=False):
     """
     prettify a BeautifulSoup4 object
 
@@ -563,6 +564,8 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[]):
     :param boolean preserve_bnsp: preserve &nbsp; chars
     :param list[str] taglist: optional. list of HTML tags to
         collapse whitespace chars inside. i.e. ["em", "h1", "span"]
+    :param boolean remove_trailing_backslash: if True, remove
+        trailing /> on void tags (a w3 validation warning)
     :return: prettified STRING for soup
     """
     formatter = 'minimal'  # default formatter for prettify: preserves cyrillic but removes &nbsp;
@@ -574,6 +577,8 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[]):
     soup_str = soup.prettify(formatter=formatter)
     for tag in taglist:
         soup_str = collapse_tags(soup_str, tag)
+    if remove_trailing_backslash:
+        soup_str = soup_str.replace("/>", ">")
     return soup_str
 
 
@@ -600,7 +605,8 @@ def collapse_tags(html, tag):
 
 
 def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
-                       preserve_nbsp=True, taglist=[], log=True):
+                       preserve_nbsp=True, taglist=[], log=True,
+                       remove_trailing_backslash=False):
     """
     write a BeautifulSoup object to a file (prettified)
 
@@ -616,9 +622,12 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
         collapse whitespace chars inside of during prettify
         i.e. ["h1", "span", "em"]
     :param boolean log: print steps to stdout
+    :param boolean remove_trailing_backslash: if True, remove
+        trailing /> on void tags (a w3 validation warning)
     :return: None
     """
     if log: print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}")
           .format(output_filename))
-    pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp, taglist)
+    pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp,
+                                taglist, remove_trailing_backslash)
     io_utils.write_str_to_file(pretty_soup, output_filename, force)
