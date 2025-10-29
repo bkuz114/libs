@@ -597,7 +597,7 @@ def collapse_tags(html, tag):
     # remove spaces AFTER opening tag
     # (be mindful of attrs, i.e. <tag class="..")
     # https://stackoverflow.com/questions/6711567/how-to-use-python-regex-to-replace-using-captured-group
-    reg_open = re.compile(f'<{tag}([^>]*)>\s*')
+    reg_open = re.compile(f'<{tag}([^>]*)>\s*') # ([^>]*) captures 0 or more of everything BUT ">" char
     html = reg_open.sub(f'<{tag}\\1>', html)
     # replace spaces BEFORE closing tag.
     html = re.sub(f'\s*</{tag}>',f'</{tag}>', html)
