@@ -253,8 +253,8 @@ def js_tag(path):
     :return: BeautifulSoup4 object of <script> tag
     """
     # note: <script> tag can not be self-closed like <link> tags
-    return BeautifulSoup('<script type="text/javascript" src="'
-                         + path + '"></script>', "html.parser")
+    return BeautifulSoup('<script src="' + path + '"></script>',
+                         "html.parser")
 
 
 def css_tag(path):
