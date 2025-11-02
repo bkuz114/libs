@@ -8,6 +8,11 @@ from bs4 import BeautifulSoup, Comment
 
 ENC = 'utf-8-sig'
 
+FILENAME = os.path.basename(__file__)
+# str to prefix to HTML comments being added by this lib
+# needed so that there's a way to remove all HTML comments
+# except internal ones
+COMMENT_PREFIX = " " + FILENAME + " "
 
 def has_text_content(tag):
     """
@@ -284,7 +289,7 @@ def add_js_tags(soup, paths, add_to_head=True):
 
     for path in paths:
         script_tag = js_tag(path)
-        comment = Comment(' #script tag added via beautiful_soup_utils.py ')
+        comment = Comment(COMMENT_PREFIX + "added this script tag")
         script_tag.script.insert_before(comment)
         if add_to_head:
             soup.head.append(script_tag)
@@ -320,7 +325,7 @@ def add_css_head_tags(soup, paths, startAt=None):
     new_paths = BeautifulSoup("", 'html.parser')
     for path in paths:
         link_tag = css_tag(path)
-        comment = Comment(" #link tag added via beautiful_soup_utils.py ")
+        comment = Comment(COMMENT_PREFIX + "added this link tag")
         link_tag.link.insert_before(comment)
         new_paths.append(link_tag)
 
@@ -622,9 +627,26 @@ def collapse_tags(html, tag):
     return html
 
 
+def remove_html_comments(soup, preserve_internal):
+    """
+    remove HTML comments from a BeautifulSoup object
+
+    :param BeautifulSoup4 soup: soup to remove comments from
+    :param boolean preserve_internal: if True, dont' remove
+        comments added by beautiful_soup_utils.py functions.
+    :return: None (modifies soup)
+    """
+    comments = soup.find_all(string=lambda text: isinstance(text, Comment))
+    for comment in comments:
+        if preserve_internal and COMMENT_PREFIX in comment.string:
+            continue
+        comment.extract()
+
+
 def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
                        preserve_nbsp=True, taglist=[], log=True,
-                       remove_trailing_backslash=False):
+                       remove_trailing_backslash=False,
+                       remove_comments=False, preserve_internal=False):
     """
     write a BeautifulSoup object to a file (prettified)
 
@@ -642,10 +664,18 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
     :param boolean log: print steps to stdout
     :param boolean remove_trailing_backslash: if True, remove
         trailing /> on void tags (a w3 validation warning)
+    :param boolean remove_comments: if True, removes HTML comments
+    :param boolean preserve_internal: if remove_comments=True
+        and this is True, then removes all comments EXCEPT
+        ones added internally by functions in this library,
+        else removes those too. if remove_comments=False,
+        then this option is not used.
     :return: None
     """
     if log: print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}")
           .format(output_filename))
+    if remove_comments:
+        remove_html_comments(soup, preserve_internal)
     pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp,
                                 taglist, remove_trailing_backslash)
     io_utils.write_str_to_file(pretty_soup, output_filename, force)

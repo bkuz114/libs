@@ -102,6 +102,23 @@ beautiful_soup_utils.update_paths(bs, rel)
 print("soup after:")
 print(bs.prettify())
 
+# remove HTML comments, except for the internal
+# ones added
+print("\n -- Remove HTML comments except internal ones added by library")
+print("soup before:")
+print(bs.prettify())
+beautiful_soup_utils.remove_html_comments(bs, True)
+print("soup after:")
+print(bs.prettify())
+
+# remove ALL comments
+print("\n -- Remove ALL comments remaining")
+print("soup before:")
+print(bs.prettify())
+beautiful_soup_utils.remove_html_comments(bs, False)
+print("soup after:")
+print(bs.prettify())
+
 # test has_text_content method
 print(" --- text 'has_text_content' function ---")
 p_w_content = soup.new_tag("p")
