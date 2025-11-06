@@ -532,7 +532,9 @@ def preserve_nbsp_and_ru(string):
         - Note: prettify 'formatter' arg takes only 5 values:
             (1) "minimal" (removes &nbsp; preserves Cyrillic),
             (2) "html" (preserves &nbsp; mangles Cyrillic),
-            (3) "html5" (not sure behavior)
+            (3) "html5" (same as 'html', just doesn't add trailing /
+                on void tags, to conform with html5 rules
+                [i.e. generates <br> rather than <br/>])
             (4) None (removes &nbsp; preseves Cyrillic)
                 [but docs warn it can generate bad HTML]
             (5) custom function.
@@ -577,7 +579,7 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
     if preserve_ru and preserve_nbsp:
         formatter = preserve_nbsp_and_ru  # cust func that preserves both
     elif preserve_nbsp:
-        formatter = 'html'  # preserves &nbsp; but mangles Cyrillic
+        formatter = 'html5' # preserves &nbsp; but mangles Cyrillic; no trailing / on void tags like <br>
 
     soup_str = soup.prettify(formatter=formatter)
     for tag in taglist:
