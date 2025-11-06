@@ -9,7 +9,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 soup = BeautifulSoup("", 'html.parser')
 
 filepath = os.path.join(SCRIPT_DIR, "basic.html")
-filepath_out = os.path.join(SCRIPT_DIR, "basic_modified.html")
+output_dir = os.path.join(SCRIPT_DIR, "output_test_bs")
 bs = beautiful_soup_utils.make_soup_from_file(filepath)
 print(bs)
 
@@ -129,6 +129,16 @@ for test_tag in test_tags:
     print("Next tag: " + str(test_tag))
     print("Has content? " + str(beautiful_soup_utils.has_text_content(test_tag)))
 
-# write this to file
-print("---- Tests over... write it to file... ---")
-beautiful_soup_utils.write_soup_to_file(bs, filepath_out, True) 
+# writing soup to file
+print("\n -- Test writing soup to file in different configurations")
+outfile1 = os.path.join(output_dir, "save-ru.html")
+outfile2 = os.path.join(output_dir, "save-nbsp.html")
+outfile3 = os.path.join(output_dir, "save-ru-save-nbsp.html")
+print("\n    1. write soup to file, preserving Cyrillic, but not &nbsp;")
+beautiful_soup_utils.write_soup_to_file(bs, outfile1, True, True, False)
+print("\n    2. write soup to file, preserving &nbsp; but not Cyrillic")
+beautiful_soup_utils.write_soup_to_file(bs, outfile2, True, False, True)
+print("\n    3. write soup to file, preserving Cyrillic and &nbsp;")
+beautiful_soup_utils.write_soup_to_file(bs, outfile3, True, True, True)
+
+print("\nTESTS DONE")
