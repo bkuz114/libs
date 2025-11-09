@@ -14,6 +14,7 @@ FILENAME = os.path.basename(__file__)
 # except internal ones
 COMMENT_PREFIX = " " + FILENAME + " "
 
+
 def has_text_content(tag):
     """
     check if a BeautifulSoup tag has text.
@@ -21,7 +22,7 @@ def has_text_content(tag):
     :return: True if tag has text, False otherwise
 
     (@TODO: Ensure this is a Tag object?)
-    see: https://stackoverflow.com/questions/61794102/how-to-remove-empty-p-tags-with-beautiful-soup-4
+    https://stackoverflow.com/questions/61794102/how-to-remove-empty-p-tags-with-beautiful-soup-4
     """
     if len(tag.get_text(strip=True)) == 0:
         return False
@@ -176,8 +177,10 @@ def find_replace_str(soup, string, content, allow_empty=False):
     use case:
     html doc with template vars %TITLE% or %MAIN-CONTENT%
     Generate that info elsewhere, then call this to swap it in
-      beautiful_soup_utils.find_replace_str(my_soup, "%TITLE%, "my great title")
-      beautiful_soup_utils.find_replace_str(my_soup, "%MAIN-CONTENT%", my_soup_div)
+      beautiful_soup_utils.find_replace_str(
+                    my_soup, "%TITLE%, "my great title")
+      beautiful_soup_utils.find_replace_str(
+                    my_soup, "%MAIN-CONTENT%", my_soup_div)
 
     :param BeautifulSoup4 soup: object to replace string in
     :param str string: string to replace
@@ -456,7 +459,7 @@ def update_paths_unix(soup):
     """
     Updates paths in all <link>, <script>, and <a>
     tags in a BeautifulSoup object so that they are
-    in Unix filenotation. (Windows \ separators
+    in Unix filenotation. (Windows \\ separators
     will result in w3 validation errors)
 
     :param BeautifulSoup4 soup: the bs4 object to update
@@ -500,8 +503,9 @@ def make_soup_from_file(filepath, log=True):
     :param boolean log: print steps to stdout
     :return: BeautifulSoup4 object for data in the file
     """
-    if log: print(("\t\tbeautiful_soup_utils: Generate soup from file "
-           "\n\t\t\t{}").format(filepath))
+    if log:
+        print("\t\tbeautiful_soup_utils: Generate soup "
+              "from file \n\t\t\t{}".format(filepath))
     if not os.path.abspath(filepath):
         raise Exception(
             ("ERROR (beautiful_soup_utils) filepath to get soup from is not "
@@ -562,7 +566,7 @@ def preserve_nbsp_and_ru(string):
 
 
 def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
-        taglist_outer=[], remove_trailing_backslash=False):
+                  taglist_outer=[], remove_trailing_backslash=False):
     """
     prettify a BeautifulSoup4 object
 
@@ -581,7 +585,7 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
     if preserve_ru and preserve_nbsp:
         formatter = preserve_nbsp_and_ru  # cust func that preserves both
     elif preserve_nbsp:
-        formatter = 'html5' # preserves &nbsp; but mangles Cyrillic; no trailing / on void tags like <br>
+        formatter = 'html5'  # preserves &nbsp; but mangles Cyrillic; no trailing / on void tags like <br>
 
     soup_str = soup.prettify(formatter=formatter)
     for tag in taglist:
@@ -660,10 +664,10 @@ def collapse_tags_inner(html, tag):
     # remove spaces AFTER opening tag
     # (be mindful of attrs, i.e. <tag class="..")
     # https://stackoverflow.com/questions/6711567/how-to-use-python-regex-to-replace-using-captured-group
-    reg_open = re.compile(f'<{tag}([^>]*)>\s*') # ([^>]*) captures 0 or more of everything BUT ">" char
+    reg_open = re.compile(f'<{tag}([^>]*)>\\s*')  # ([^>]*) captures 0 or more of everything BUT ">" char
     html = reg_open.sub(f'<{tag}\\1>', html)
     # replace spaces BEFORE closing tag.
-    html = re.sub(f'\s*</{tag}>',f'</{tag}>', html)
+    html = re.sub(f'\\s*</{tag}>', f'</{tag}>', html)
     return html
 
 
@@ -715,8 +719,9 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
         then this option is not used.
     :return: None
     """
-    if log: print(("\t\tbeautiful_soup_utils: Prettify soup and write to\n\t\t\t{}")
-          .format(output_filename))
+    if log:
+        print("\t\tbeautiful_soup_utils: Prettify soup "
+              "and write to\n\t\t\t{}".format(output_filename))
     if remove_comments:
         remove_html_comments(soup, preserve_internal)
     pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp,
