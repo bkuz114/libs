@@ -1,5 +1,6 @@
 import sys
 import os
+import datetime
 sys.path.append("..")
 import beautiful_soup_utils
 from bs4 import BeautifulSoup
@@ -9,7 +10,12 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 soup = BeautifulSoup("", 'html.parser')
 
 filepath = os.path.join(SCRIPT_DIR, "basic.html")
-output_dir = os.path.join(SCRIPT_DIR, "output_test_bs")
+# create a timestamped output dir
+output_dir_base = os.path.join(SCRIPT_DIR, "output_test_bs")
+fmt = "%Y_%m_%d-%H_%M_%S"
+ct = datetime.datetime.now().strftime(fmt)
+output_dir = os.path.abspath(os.path.join(output_dir_base, ct))
+
 bs = beautiful_soup_utils.make_soup_from_file(filepath)
 print(bs)
 
