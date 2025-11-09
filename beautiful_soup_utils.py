@@ -562,7 +562,7 @@ def preserve_nbsp_and_ru(string):
 
 
 def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
-        remove_trailing_backslash=False):
+        taglist_outer=[], remove_trailing_backslash=False):
     """
     prettify a BeautifulSoup4 object
 
@@ -571,6 +571,8 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
     :param boolean preserve_bnsp: preserve &nbsp; chars
     :param list[str] taglist: optional. list of HTML tags to
         collapse whitespace chars inside. i.e. ["em", "h1", "span"]
+    :param list[str] taglist_outer: optional list of tags to
+        collapse whitespace chars OUTSIDE of i.e. ["em", "h1", "span"]
     :param boolean remove_trailing_backslash: if True, remove
         trailing /> on void tags (a w3 validation warning)
     :return: prettified STRING for soup
@@ -583,7 +585,9 @@ def prettify_soup(soup, preserve_ru=True, preserve_nbsp=True, taglist=[],
 
     soup_str = soup.prettify(formatter=formatter)
     for tag in taglist:
-        soup_str = collapse_tags(soup_str, tag)
+        soup_str = collapse_tags_inner(soup_str, tag)
+    for tag in taglist_outer:
+        soup_str = collapse_tags_outer(soup_str, tag)
     if remove_trailing_backslash:
         soup_str = fix_void_tags(soup_str)
     return soup_str
@@ -607,7 +611,41 @@ def fix_void_tags(html):
     return html
 
 
-def collapse_tags(html, tag):
+def collapse_tags_outer(html, tag):
+    """
+    removes whitespace OUTSIDE an HTML tag. i.e.:
+    <div>
+        <span>
+            text
+        </span>
+    </div>
+    returns:
+    <div><span>
+            text
+         </span></div>
+
+    WARNING: Proceed at own risk.
+
+    :param str html: str of html to collapse whitespaces in
+    :param str tag: tag in the html to collapse whitespace in
+        (i.e. "em" , "span", etc.)
+    :return str with whitespace collapsed around the tags
+    """
+
+    # remove space chars BEFORE opening tag
+    # (be mindful of attrs, i.e. <tag class="..")
+    # https://stackoverflow.com/questions/6711567/how-to-use-python-regex-to-replace-using-captured-group
+    reg_tag = re.compile(f'\\s*<{tag}([^>]*)>\\s*')
+    html = reg_tag.sub(f'<{tag}\\1>', html)
+    # replace spaces AFTER closing tag
+    # https://stackoverflow.com/questions/55962146/remove-line-breaks-and-spaces-around-span-elements-with-python-regex
+    # (note: that SO answer didn't entirely work; maybe because of the +
+    # it was ignoring </span> tags that only had a newline around one side)
+    html = re.sub(f'</{tag}>\\s*', f'</{tag}>', html)
+    return html
+
+
+def collapse_tags_inner(html, tag):
     """
     find tags of a given type in an HTML string (i.e. <h1>)
     and collapse any whitespace chars inside those tags
@@ -646,8 +684,8 @@ def remove_html_comments(soup, preserve_internal):
 
 
 def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
-                       preserve_nbsp=True, taglist=[], log=True,
-                       remove_trailing_backslash=False,
+                       preserve_nbsp=True, taglist=[], taglist_outer=[],
+                       log=True, remove_trailing_backslash=False,
                        remove_comments=False, preserve_internal=False):
     """
     write a BeautifulSoup object to a file (prettified)
@@ -662,6 +700,9 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
         chars while prettifying
     :param list[str] taglist: optional list of tags to
         collapse whitespace chars inside of during prettify
+        i.e. ["h1", "span", "em"]
+    :param list[str] taglist_outer: optional list of tags to
+        collapse whitespace chars OUTSIDE of during prettify
         i.e. ["h1", "span", "em"]
     :param boolean log: print steps to stdout
     :param boolean remove_trailing_backslash: if True, remove
@@ -679,5 +720,6 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
     if remove_comments:
         remove_html_comments(soup, preserve_internal)
     pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp,
-                                taglist, remove_trailing_backslash)
+                                taglist, taglist_outer,
+                                remove_trailing_backslash)
     io_utils.write_str_to_file(pretty_soup, output_filename, force)
