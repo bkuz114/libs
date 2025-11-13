@@ -47,38 +47,32 @@ FORMAT_LOGFILE = "%(asctime)s:: %(levelname)s: %(message)s (%(filename)s:%(linen
 FORMAT_CONSOLE_BASIC = "%(message)s"
 FORMAT_CONSOLE_HIGH = "%(levelname)s: %(message)s (%(filename)s:%(lineno)d)"
 
-'''
-custom logging Formatter to display
-log levels in different colors.
-https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
-
-NOTE: you do NOT need to utilize this
-CustomFormatter class when using
-colorlogger.py externally; this class
-is to be used internally within this script...
-
-How to use within this script:
-
-- When you create a Handler for a logger
-  (i.e. a StreamHandler, FileHandler, etc.),
-  you can set a Formatter for that Handler
-  (i.e. <handler>.setFormatter(<formatter>)..
-- log messages printed by that hanlder will
-  be formatted according to that Formatter's
-  settings.
-- So, if you want log messages to be colored,
-  then set your Handler's formatter to an
-  instance of this class
-  (i.e. <handler>.setFormatter(CustomFormatter())
-
-NOTE2: class name 'CustomFormatter' is not
-significant; can make as many of
-these classes as I want as long as
-they are inheriting from logging.Formatter.
-'''
-
 
 class CustomFormatter(logging.Formatter):
+
+    """
+    custom logging Formatter to display log level msgs in
+    different colors.
+    https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+
+    NOTE: to be used internally within this script only
+
+    How to use within this script:
+
+    - When you create a logger Handler (i.e. a StreamHandler,
+    FileHandler, etc.), can assign a Formatter to the Handler
+    (i.e. <handler>.setFormatter(<formatter>). log msgs printed
+    by the hanlder are passed to its formatter to do mods prior
+    to printing.
+    -  if you want log messages to be colored, set
+    Handler's formatter to an instance of this class
+    (i.e. <handler>.setFormatter(CustomFormatter())
+
+    NOTE2: class name 'CustomFormatter' is not
+    significant; can make as many of
+    these classes as I want as long as
+    they are inheriting from logging.Formatter.
+    """
 
     green = "\x1b[32;20m"
     blue = "\x1b[34;20m"
@@ -130,47 +124,39 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-'''
-set up root logger
-
-Arguments:
-    @loglevel_console: (int) level to log onto console
-        - valid values are the numeric levels used by
-          python's logging module. see:
-          https://docs.python.org/3/library/logging.html#logging-levels
-    @loglevel_logile: (int) level to log into logfilex
-        - valid values are the numeric levels used by
-          python's logging module. see:
-          https://docs.python.org/3/library/logging.html#logging-levels
-    @logfile_nocolor: (String) path of colorless logfile
-        - must be absolute path.
-        - if None or empty string, won't make one
-    @logfile_color: (String) path of colorful logfile
-        - must be absolute path.
-        - if None or empty string, won't make one
-    @append: (boolean) if True, log files will be appended to
-        if they exist, else will overwrite.
-    @console: (boolean) if True, root logger will log to
-        console, if False, will NOT log to console.
-    @stderr: (boolean) if True, then console output from
-        from root logger will go to stderr, else will go
-        to stdout.
-    @colorinfo: (boolean) if True, then .info lines on
-        the CONSOLE ONLY will be colored (else, they will
-        have no color, whereas other levels such as debug
-        will. Note: the reason I do this is because in
-        some applications having color on the console is
-        distracting, whereas in others like book-builder,
-        its an easy way to differentiate what's coming from
-        where without having to prefix lines with heavy data)
-'''
-
-
 def setup(loglevel_console=logging.DEBUG,
           loglevel_logfile=logging.DEBUG,
           logfile_nocolor=None, logfile_color=None,
           append=False,
           console=True, stderr=False, colorinfo=False):
+
+    """
+    set up root logger
+
+    :param int loglevel_console: optional. level to log to console
+        valid values: 0, 10, 20, 30, 40, 50 (the values used by
+        python's logging module). see:
+        https://docs.python.org/3/library/logging.html#logging-levels
+    :param int loglevel_logile: optional. level to log in logfile
+        valid values: 0, 10, 20, 30, 40, 50 (the values used by
+        python's logging module). see:
+        https://docs.python.org/3/library/logging.html#logging-levels
+    :param str logfile_nocolor: optional. abs path for colorless
+        logfile to write to. (if None or "", won't make one)
+    :param str logfile_color: optional. abs path of colored logfile
+        to write to. If None or "", won't make one.
+    :param boolean append: optional. append to existing logfiles, if
+        they already exists (else will overwrite).
+    :param boolean console: optional. root logger should log to console.
+    :param boolean stderr: optional. root logger console output goes
+        to stderr (else goes to stdout)
+    :param boolean colorinfo: optional. "info" lines on console will
+        be colored (else they have no color, regardless of color of
+        other log levels). Note: reason I do this is because in some
+        apps, having color on console is distacting, whereas in others
+        like book-builder, its an easy way to differentiate what's
+        coming from where without having to prefix lines with data.
+    """
 
     '''
     create handlers (console and logfile(s))
@@ -242,6 +228,7 @@ def setup(loglevel_console=logging.DEBUG,
 
 
 def test():
+    """tests that root logger is working"""
     logger = logging.getLogger(__name__)
     logger.debug("debug message")
     logger.info("info message")
