@@ -35,6 +35,7 @@ usage:
 """
 
 import re
+import copy
 
 
 def is_regex_char(string):
@@ -128,7 +129,9 @@ class DeclensionMarker:
         self.declension_classes = declension_classes
         self.example_sentence_classes = example_sentence_classes
 
-    def mark_noun(self, noun, dictionary_form=False, add_lang_attr=True):
+    def mark_noun(self, noun, dictionary_form=False, add_lang_attr=True,
+                  extra_base_classes=[], extra_declension_classes=[],
+                  add_space_start=False, add_space_end=False):
         """
         takes an example noun that's been marked for declension
         and returns a string of HTML seperating the root and
@@ -146,55 +149,83 @@ class DeclensionMarker:
             no delim on a non-nom noun)
         :param boolean add_lang_attr: if True, adds lang="ru" to
             <span> tags
+        :param list<Str> extra_base_classes: extra css classes to add
+            to <span> for base of noun (in addition to self.base_classes)
+        :param list<Str> extra_declension_classes: extra css classes
+            to add to <span> for declined ending (in addition to
+            self.declension_classes)
+        :param boolean add_space_start: if True, adds <span>&nbsp;</span>
+            before opening/base <span> (used when noun is preceeded by
+            a space in the sentence, and font-size=0 on parent tag --
+            a strategry for removing defualt spacing around <span> tags)
+        :param boolean add_space_end: if True, adds <span>&nbsp;</span>
+            after last/declension <span> (used when noun is followed by
+            a space in the sentence, and font-size=0 on parent tag --
+            a strategy for removing default spacing around <span> tags)
         :return Str: the noun marked up in HTML
         """
+
+        marked = ""
 
         lang_attr = None
         if add_lang_attr:
             lang_attr = "ru"
 
-        markup = []
-        parsed = noun.split(self.delim_declension)
-        # wrap base (noun up to delined portion) in <span>
-        markup.append(
-                wrap_in_tag(parsed[0], "span", self.base_classes, lang_attr))
-        if len(parsed) > 1:
+        base_classes = copy.deepcopy(self.base_classes)
+        if extra_base_classes:
+            base_classes.extend(extra_base_classes)
+        declension_classes = copy.deepcopy(self.declension_classes)
+        if extra_declension_classes:
+            declension_classes.extend(extra_declension_classes)
+
+        delim = self.delim_declension
+        split_noun = noun.split(delim)
+        if len(split_noun) == 1:  # no * char; no change, such as acc masc inan
+            marked += wrap_in_tag(
+                    split_noun[0], "span", base_classes, lang_attr)
+        elif len(split_noun) == 2:  # regular stuff
             if dictionary_form:
                 raise Exception(
                         "Example noun ({}) indicated as ditionary form "
                         "but has declension delimeter "
-                        "({})".format(noun, self.delim_declension))
-            else:
-                if len(parsed) == 2:
-                    if not parsed[0]:
-                        raise Exception(
-                                "Delimeter at beginning of noun ({}): "
-                                "{} is used to mark declined "
-                                "ending".format(noun, self.delim_declension))
-                    if not parsed[1]:
-                        # 0-ending noun i.e. not nom, but no ending
-                        print("Zero-ending... figure this out later...")
-                    else:
-                        # wrap declined ending in <span>
-                        markup.append(wrap_in_tag(
-                            parsed[1], "span",
-                            self.declension_classes, lang_attr))
-                else:
-                    raise Exception(
-                            "Multiple delimeters in noun! {}".format(noun))
-        else:
-            if not dictionary_form:
+                        "({})".format(noun, delim))
+            if not split_noun[0]:
                 raise Exception(
-                        "No delimeter ({}) in example noun, yet not indicated"
-                        "to be in nominative form: "
-                        "{}".format(self.delim_declension, noun))
+                        "Delimeter at beginning of noun ({}): "
+                        "{} is used to mark declined "
+                        "ending".format(noun, delim))
+            else:
+                # wrap portion of noun up to declension
+                marked += wrap_in_tag(
+                        split_noun[0], "span", base_classes, lang_attr)
+            if not split_noun[1]:
+                # zero ending noun, i.e. not nom, but no ending
+                print("Zero-ending... figure this out later...")
+            else:
+                # wrap declined ending in <span>
+                marked += wrap_in_tag(
+                    split_noun[1], "span",
+                    declension_classes, lang_attr)
+        else:
+            raise Exception("Noun has more than one {} char".format(delim))
 
-        marked = "".join(markup)
+        # add spaces to front or end of span
+        # &nbsp; must be in a <span>, else it will get
+        # font-size:0 of the parent and it won't show up
+        SPACE = "<span>&nbsp;</span>"
+        if add_space_start:
+            marked = SPACE + marked
+        if add_space_end:
+            marked = marked + SPACE
         return marked
 
     def mark_sentence(self, sentence, wrap_sentence_in_spans=False,
                       convert_space_to_nbsp=True, add_lang_attr=False,
-                      encapsulation_tag=None):
+                      encapsulation_tag=None,
+                      extra_base_classes=[],
+                      extra_declension_classes=[],
+                      extra_sentence_classes=[],
+                      pad_spans=False):
         """
         Returns HTML markup for an example sentence
 
@@ -218,10 +249,31 @@ class DeclensionMarker:
             <span> tags
         :param String encapsulation_tag: a tag to wrap the entire
             marked up sentence in ("span", "div", etc.)
+        :param list<Str> extra_base_classes: extra css classes to add to
+            the <span> capturing noun UP to declined part (in addition
+            to self.base_classes)
+        :param list<Str> extra_declension_classes: extra css classes to
+            add to <span> capturing the declined part of a noun
+            (in addition to self.declined_classes)
+        :paran boolean pad_spans: if True, then:
+            1. adds <span>&nbsp;</span> BEFORE noun <span>s if noun
+               preceeded by space (i.e. "Папа [Борис*а]")
+            2. adds <span>&nbspl</span> AFTER noun <span>s if noun
+               is followed by space (i.e. "[Иван*а] сын")
+            (This is needed for cases where font-size=0 on parent tag,
+            which is a strategy for removing automatic spacing around
+            <span> tags; in such scenarios, the space prior to that noun
+            <span> will NOT render in the browser, and would end up with
+            "ПапаБориса", hence the need for this option)
         :return Str: String of marked up HTMl for sentence
         """
-        marked = ""
+
+        noun_section = ""
+        before_noun = ""
+        after_noun = ""
         dictionary_form = False
+        noun_starts_sentence = False
+        noun_ends_sentence = False
 
         if convert_space_to_nbsp:
             sentence = sentence.replace(" ", "&nbsp;")
@@ -237,34 +289,84 @@ class DeclensionMarker:
             close_delim = self.delim_nom_noun_close
             dictionary_form = True
         if not open_delim or not close_delim:
-            raise Exception("not formed correctly")
+            raise Exception(
+                    "Can't find delimeter set in sentence. Sets:"
+                    "{} {} (for nouns which decline in the sentence "
+                    "or {} {} (for nominative examples"
+                    ")".format(
+                        self.delim_noun_open, self.delim_noun_close,
+                        self.deliim_nom_noun_open, self.delim_nom_noun_close))
 
-        # parse the sentence into left, noun section, right
-        left, noun, right = None, None, None
-        parsed = sentence.split(open_delim)
-        if len(parsed) > 1:
-            left = parsed[0]
-            rest = parsed[1].split(close_delim)
-            if len(rest) > 1:
-                noun = rest[0]
-                right = rest[1]
-            else:
-                raise Exception("not formed correctly")
+        # section to left of noun
+        sentence_split = sentence.split(open_delim)
+        if len(sentence_split) == 2:
+            before_noun = sentence_split[0]
+            if not before_noun:
+                # open delim first char in sentence
+                noun_starts_sentence = True
+            rest = sentence_split[1]
+        elif len(sentence_split) < 2:
+            raise Exception(
+                "No {} char (noun not encapsulated in "
+                "{} {})".format(open_delim, open_delim, close_delim))
+        if len(sentence_split) > 2:
+            raise Exception(
+                "Too many {} chars (noun should be encapsulated in "
+                "{} {})".format(open_delim, open_delim, close_delim))
+
+        # noun section + section to right
+        sentence_split = rest.split(close_delim)
+        if len(sentence_split) == 2:
+            noun_section = sentence_split[0]
+            after_noun = sentence_split[1]
+            if not noun_section:
+                raise Exception(
+                        "{} {} delimeters, but no noun "
+                        "inside".format(open_delim, close_delim))
+            if after_noun == after_noun.lstrip():
+                # no space follows the noun
+                # (either it ends sentence, or
+                # punctunation immediately follows,
+                # i.e. [Борис*а].)
+                noun_ends_sentence = True
+        elif len(sentence_split) < 2:
+            raise Exception(
+                    "No {} char (noun not encapsulated in "
+                    "{} {}".format(close_delim, open_delim, close_delim))
+        elif len(sentence_split) > 2:
+            raise Exception(
+                "Too many {} chars (noun should be encapsulated in "
+                "{} {})".format(close_delim, open_delim, close_delim))
 
         # markup noun
-        noun_markup = self.mark_noun(noun, dictionary_form, add_lang_attr)
+        add_space_start = False
+        add_space_end = False
+        if pad_spans and not noun_starts_sentence:
+            add_space_start = True
+        if pad_spans and not noun_ends_sentence:
+            add_space_end = True
+        noun_markup = self.mark_noun(
+                noun_section, dictionary_form, add_lang_attr,
+                extra_base_classes,
+                extra_declension_classes,
+                add_space_start, add_space_end)
 
         # wrap remaining parts of sentence in <span> tags if requested
+        sentence_classes = copy.deepcopy(self.example_sentence_classes)
+        if extra_sentence_classes:
+            sentence_classes.extend(extra_sentence_classes)
         if wrap_sentence_in_spans:
             lang_attr = None
             if add_lang_attr:
                 lang_attr = "ru"
-            left = wrap_in_tag(
-                    left, "span", self.example_sentence_classes, lang_attr)
-            right = wrap_in_tag(
-                    right, "span", self.example_sentence_classes, lang_attr)
+            if before_noun:
+                before_noun = wrap_in_tag(
+                        before_noun, "span", sentence_classes, lang_attr)
+            if after_noun:
+                after_noun = wrap_in_tag(
+                        after_noun, "span", sentence_classes, lang_attr)
 
-        marked = left + noun_markup + right
+        marked = before_noun + noun_markup + after_noun
 
         # wrap entire marked up sentence in a tag if requrested
         if encapsulation_tag:
@@ -272,7 +374,13 @@ class DeclensionMarker:
 
         return marked
 
-    def mark_string(self, string):
+    def mark_string(self, string, wrap_sentence_parts_in_spans=False,
+                    convert_spaces_to_nbsp=False, add_lang_attr=False,
+                    extra_base_classes=[],
+                    extra_declension_classes=[],
+                    extra_sentence_classes=[],
+                    pad_spans=False):
+
         """
         finds all example sentences in a String and marks them
 
@@ -299,6 +407,37 @@ class DeclensionMarker:
         </html>"
 
         :param String string: the string to find example sentences in
+        :param boolean wrap_sentence_parts_in_spans: if True, then
+            non-noun parts of sentence gets wrapped in <span> tags
+            as well (i.e.
+                <span>Иван</span><span>а</span><span> сын.</span>)
+        :paran boolean convert_space_to_nbsp: if True, converts
+            space chars in example sentences to &nbsp;
+            (Necessary depending on css on parent classes, as space
+            chars might be eliminated, resulting in <span> tags with
+            no spacing between them.)
+        :param boolean add_lang_attr: if True, adds lang="ru" to
+            <span> tags
+        :param list<Str> extra_base_classes: extra css classes to add to
+            the <span> capturing nouns UP to declined part (in addition
+            to self.base_classes)
+        :param list<Str> extra_declension_classes: extra css classes to
+            add to <span> capturing declined parts of a noun
+            (in addition to self.declined_classes)
+        :param list<Str> extra_sentence_classes: extra css classes to
+            add to <span> tags encapsulating non-noun parts of example
+            sentences, if wrap_sentence_parts_in_spans=True
+            (in addition to self.example_sentence_classes)
+        :paran boolean pad_spans: if True, then:
+            1. adds <span>&nbsp;</span> BEFORE noun <span>s if noun
+               preceeded by space (i.e. "Папа [Борис*а]")
+            2. adds <span>&nbspl</span> AFTER noun <span>s if noun
+               is followed by space (i.e. "[Иван*а] сын")
+            (This is needed for cases where font-size=0 on parent tag,
+            which is a strategy for removing automatic spacing around
+            <span> tags; in such scenarios, the space prior to that noun
+            <span> will NOT render in the browser, and would end up with
+            "ПапаБориса", hence the need for this option)
         :return String: string with all example sentences replaced with
             their marked up version
         """
@@ -312,6 +451,12 @@ class DeclensionMarker:
                 string)
         for (enclosed_sentence, sentence) in res:
             string = string.replace(
-                    enclosed_sentence, self.mark_sentence(sentence))
-
+                    enclosed_sentence,
+                    self.mark_sentence(
+                        sentence, wrap_sentence_parts_in_spans,
+                        convert_spaces_to_nbsp, add_lang_attr,
+                        extra_base_classes,
+                        extra_declension_classes,
+                        extra_sentence_classes,
+                        pad_spans))
         return string
