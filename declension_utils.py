@@ -33,49 +33,7 @@ usage:
 """
 
 import re
-
-
-def is_regex_char(string):
-    """checks if a string is a reserved regex char"""
-    regex_chars = [
-            "^", "$", ".", "*", "+", "?", "{", "}",
-            "[", "]", "(", ")", "|", "\\"]
-    if string in regex_chars:
-        return True
-    return False
-
-
-def escape_string(string):
-    """escapes regex chars within a string"""
-    newstr = ""
-    for char in string:
-        if is_regex_char(char):
-            char = "\\" + char
-        newstr += char
-    return newstr
-
-
-def wrap_in_tag(html_str, tag_name, classes=[], lang_attr=None):
-    """
-    Wraps String in HTML tag specified. Optional class list.
-    Example: wrap_in_tag("my text", "div", ["a", "b", "c"])
-    Returns: "<div class="a b c">my text</div>"
-
-    :param Str html_str: string of HTML to wrap in a tag
-    :param Str tag_name: type of tag (e.g. "span", "div")
-    :param list<Str> classes: css classes to add to tag.
-    :param Str lang_attr: if supplied, adds lang attr
-        to the tag, with this value i.e. <span lang="ru">
-    """
-
-    wrap = "<" + tag_name
-    if classes:
-        class_list = " ".join(classes)
-        wrap += " class='" + class_list + "'"
-    if lang_attr:
-        wrap += " lang='" + lang_attr + "'"
-    wrap += ">" + html_str + "</" + tag_name + ">"
-    return wrap
+import general_utils
 
 
 def mark_noun(noun, delim, dictionary_form=False, add_lang_attr=True,
@@ -117,14 +75,21 @@ def mark_noun(noun, delim, dictionary_form=False, add_lang_attr=True,
 
     marked = ""
 
-    lang_attr = None
+    # HTML attrs to add to various <span> tags that will be created
+    span_attrs_base = {}
+    if base_classes:
+        span_attrs_base["class"] = " ".join(base_classes)
+    span_attrs_end = {}
+    if declension_classes:
+        span_attrs_end["class"] = " ".join(declension_classes)
     if add_lang_attr:
-        lang_attr = "ru"
+        span_attrs_base["lang"] = "ru"
+        span_attrs_end["lang"] = "ru"
 
     split_noun = noun.split(delim)
     if len(split_noun) == 1:  # no * char; no change, such as acc masc inan
-        marked += wrap_in_tag(
-                split_noun[0], "span", base_classes, lang_attr)
+        marked += general_utils.wrap_in_tag(
+                split_noun[0], "span", span_attrs_base)
     elif len(split_noun) == 2:  # regular stuff
         if dictionary_form:
             raise Exception(
@@ -138,16 +103,16 @@ def mark_noun(noun, delim, dictionary_form=False, add_lang_attr=True,
                     "ending".format(noun, delim))
         else:
             # wrap portion of noun up to declension
-            marked += wrap_in_tag(
-                    split_noun[0], "span", base_classes, lang_attr)
+            marked += general_utils.wrap_in_tag(
+                    split_noun[0], "span", span_attrs_base)
         if not split_noun[1]:
             # zero ending noun, i.e. not nom, but no ending
             print("Zero-ending... figure this out later...")
         else:
             # wrap declined ending in <span>
-            marked += wrap_in_tag(
+            marked += general_utils.wrap_in_tag(
                 split_noun[1], "span",
-                declension_classes, lang_attr)
+                span_attrs_end)
     else:
         raise Exception("Noun has more than one {} char".format(delim))
 
@@ -313,21 +278,23 @@ def mark_sentence(sentence,
 
     # wrap remaining parts of sentence in <span> tags if requested
     if wrap_sentence_in_spans:
-        lang_attr = None
+        span_attrs_sentence = {}
+        if sentence_classes:
+            span_attrs_sentence["class"] = " ".join(sentence_classes)
         if add_lang_attr:
-            lang_attr = "ru"
+            span_attrs_sentence["lang"] = "ru"
         if before_noun:
-            before_noun = wrap_in_tag(
-                    before_noun, "span", sentence_classes, lang_attr)
+            before_noun = general_utils.wrap_in_tag(
+                    before_noun, "span", span_attrs_sentence)
         if after_noun:
-            after_noun = wrap_in_tag(
-                    after_noun, "span", sentence_classes, lang_attr)
+            after_noun = general_utils.wrap_in_tag(
+                    after_noun, "span", span_attrs_sentence)
 
     marked = before_noun + noun_markup + after_noun
 
     # wrap entire marked up sentence in a tag if requrested
     if encapsulation_tag:
-        marked = wrap_in_tag(marked, encapsulation_tag)
+        marked = general_utils.wrap_in_tag(marked, encapsulation_tag)
 
     return marked
 
@@ -420,8 +387,10 @@ def mark_string(string,
         their marked up version
     """
 
-    escaped_delim_sentence_open = escape_string(open_delim_sentence)
-    escaped_delim_sentence_close = escape_string(close_delim_sentence)
+    escaped_delim_sentence_open = general_utils.escape_string(
+            open_delim_sentence)
+    escaped_delim_sentence_close = general_utils.escape_string(
+            close_delim_sentence)
 
     res = re.findall(
             r"({}(.*?){})".format(
