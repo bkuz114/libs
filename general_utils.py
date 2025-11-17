@@ -42,7 +42,7 @@ def urlify(s):
     return s
 
 
-def wrap_in_tag(string, tag, attrs, pad_left=False, pad_right=False):
+def wrap_in_tag(string, tag, attrs={}, pad_left=False, pad_right=False):
     """
     wrap a string in an HTML tag with given attrs, and
     optionally pad with &nbsp; chars on either side.
