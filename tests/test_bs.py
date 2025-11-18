@@ -135,6 +135,15 @@ for test_tag in test_tags:
     print("Next tag: " + str(test_tag))
     print("Has content? " + str(beautiful_soup_utils.has_text_content(test_tag)))
 
+# search <p> tags and put text in it in <span> tags
+print("\n --- test encapsulate_tag_text ---")
+print("soup before:")
+print(bs.prettify())
+beautiful_soup_utils.encapsulate_tag_text(
+        bs, "p", {"class": "a"}, "span", {"class": "newtag"}, True)
+print("soup after:")
+print(bs.prettify())
+
 # writing soup to file
 print("\n -- Test writing soup to file in different configurations")
 outfile1 = os.path.join(output_dir, "save-ru.html")

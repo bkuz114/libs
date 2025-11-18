@@ -15,6 +15,64 @@ FILENAME = os.path.basename(__file__)
 COMMENT_PREFIX = " " + FILENAME + " "
 
 
+def encapsulate_tag_text(soup, tag_search, tag_search_attrs, tag_add,
+                         tag_add_attrs, use_nbsp=False):
+    """
+    Encapsulate plain strings within a tag within another tag.
+
+    :param BeautifulSoup4 soup: beautifulsoup4 object to modify
+    :param String tag_search: name of tag to search for within soup
+    :param dict<String> tag_search_attrs: dictionary of HTML attrs
+        for the tag to search (e.g. {"class": "a", "lang": "ru"})
+    :param string tag_add: name of tag to encapsulate any plain
+        strings that are found within the retrieved tags
+    :param dict<String> tag_add_attrs: dictionary of HTML attrs
+        for the encapsulating tag
+    :pararm boolean use_nbsp: if True, then after encapsulating
+        each plain string, will modify that string such that
+        it's last and first char -- if a whitespace -- will be replaced
+        with &nbsp; (this is needed for declension/ repo, as the
+        font-size of many <p> tags is 0 to remove default padding
+        around child <span>s; but this means all strings within
+        those <p> tags must be in tags themselves (else they won't
+        show up, as they will have font-size=0), and furthermore,
+        those whitespace chars surrounding <span>s won't render,
+        unless you make them &nbsp; chars
+
+    example:
+
+    Suppose you want to find all <p class="a"> in a soup, and then
+    encapsulate any plain strings in it in <span class="b">
+
+    encapsulate_tag_text(soup, "p", {"class": "a"}, "span", {"class": "b"})
+
+    <p class="a">
+        Here is <span class="b">text</span> !
+    </p>
+    becomes
+    <p class="a">
+        <span class="b">Here is </span>
+        <span class="b">text</span><span> !</span>
+    </p>
+    """
+    results = soup.find_all(tag_search, tag_search_attrs)
+    for result in results:
+        # get all children in the tag - this will include plain strings
+        for child in result.children:
+            if isinstance(child, bs4.element.NavigableString):
+                # encapsulate the string in tag
+                # (wrap in versions 4.0.5+)
+                child.wrap(soup.new_tag(tag_add, attrs=tag_add_attrs))
+                # pad with &nbsp; if requested
+                if use_nbsp:
+                    plain_str = child.string
+                    if plain_str.endswith(" "):
+                        plain_str = plain_str[:-1] + '\xa0'  # \x0 is &nbsp;
+                    if plain_str.startswith(" "):
+                        plain_str = '\xa0' + plain_str[1:]
+                    child.string.replace_with(plain_str)
+
+
 def has_text_content(tag):
     """
     check if a BeautifulSoup tag has text.
