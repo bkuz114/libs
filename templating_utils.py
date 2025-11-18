@@ -20,12 +20,21 @@ def template_string(string, delim_open, delim_close, tag, attrs, pad_space):
 
     # setup regexes
 
-    # reg 1: matches all chars between open and close delims,
-    # unless that char is the first char of a close delim
-    # (essentially like a non-greedy match. Only excluding
-    # first char of close delim, as it's too complex to exclude
-    # an entire string, end up having to do neg lookahead and
-    # it's full of pitfalls -- this is a simple char negation)
+    # reg 1: matches all chars between open and close delim
+    # unless that char is the 1st char of the close delim.
+    # This is essentially like a non-greedy match, where the
+    # reg will stop once it hits the first close char it
+    # encounters. Doing it this way rather than a basic
+    # non-greedy match, as will be building on this regex
+    # to look for optional spaces around it, and the non-greedy
+    # won't work in those situations, but this does.
+    # Note: only excluding first char of close delim -- rather
+    # than the entire close delim -- as it's too complex to
+    # exclude an entire string (which you would need to do if
+    # the close delim is more than one char). You end up having to
+    # do neg lookahead if you want to exclude the entire close
+    # delim and it's full of pitfalls --
+    # this is a simple char negation and it still works.
     reg_main = '{}([^{}]*){}'.format(
             d_open_esc, d_close_first_esc, d_close_esc)
     # reg 2: same as reg1, but with a space char proceeding
