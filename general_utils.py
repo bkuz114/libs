@@ -1,3 +1,5 @@
+""" Useful general utilities that don't fit anywhere else """
+
 import datetime
 import re
 import os
@@ -36,6 +38,16 @@ def absolute(path, relTo):
     return os.path.normpath(path)
 
 
+def is_regex_char(string):
+    """checks if a string is a reserved regex char"""
+    regex_chars = [
+            "^", "$", ".", "*", "+", "?", "{", "}",
+            "[", "]", "(", ")", "|", "\\"]
+    if string in regex_chars:
+        return True
+    return False
+
+
 def escape_string(string):
     """escapes regex chars within a string"""
     newstr = ""
@@ -71,16 +83,6 @@ def file_ext(path):
     if file_ext:
         return file_ext[1:]
     return ""
-
-
-def is_regex_char(string):
-    """checks if a string is a reserved regex char"""
-    regex_chars = [
-            "^", "$", ".", "*", "+", "?", "{", "}",
-            "[", "]", "(", ")", "|", "\\"]
-    if string in regex_chars:
-        return True
-    return False
 
 
 def timestamp():
