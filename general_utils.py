@@ -1,5 +1,6 @@
 import datetime
 import re
+import os
 
 
 def escape_string(string):
@@ -10,6 +11,14 @@ def escape_string(string):
             char = "\\" + char
         newstr += char
     return newstr
+
+
+def get_filename(file_path, extension=True):
+    """get filename from a path with or without extension"""
+    basename = os.path.basename(file_path)
+    if not extension:
+        return os.path.splitext(basename)[0]
+    return basename
 
 
 def is_regex_char(string):
