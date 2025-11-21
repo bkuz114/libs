@@ -383,7 +383,7 @@ def add_css_head_tags(soup, paths, startAt=None):
     :returns: None
     """
 
-    soup_head = soup.find("head")
+    soup_head = soup.head
     if not soup_head:
         raise Exception("no 'head' tag in soup sent to add_css_head_tag")
 
