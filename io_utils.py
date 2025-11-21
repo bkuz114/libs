@@ -2,43 +2,9 @@ import os
 import sys
 import shutil
 import stat
+import general_utils
 
 ENC = 'utf-8'
-
-
-def absolute(path, relTo):
-    """
-    Makes a filepath absolute (and normalizes path separators).
-
-    :param str path: path to make absolute
-    :param str relTo: if path is relative, creates
-        the abs path relative to this path.
-    :return: str. the normalized, absolute path.
-    :example:
-        absolute("../b.txt", "C:\\Users\\Boris\\Desktop")
-        returns: "C:\\Users\\Boris\\b.txt"
-    """
-    if not path:
-        raise Exception("\n\nERROR: io_utils:absolute: "
-                        "Path to convert to absolute is "
-                        "empty or None.\nPath: {}"
-                        .format(path))
-    if not os.path.isabs(path):
-        if not os.path.isabs(relTo):
-            raise Exception("\n\nERROR: io_utils:absolute: "
-                            "This function takes a path, and "
-                            "if that path is not absolute, it "
-                            "forms the absolute value of that "
-                            "path relative some other path.\n"
-                            "Issue: Path passed was not absolute, "
-                            "but path to evaluate it from is "
-                            "not aboslute either!\n\n"
-                            "Path:\n{}\n\n"
-                            "Path to evaluate it relative from:\n{}"
-                            .format(path, relTo))
-        path = os.path.abspath(os.path.join(relTo, path))
-    # normpath normalizes in case Unix + Windows separators
-    return os.path.normpath(path)
 
 
 def copy_file(src, dest, force=False, assume_dir=True):
@@ -110,7 +76,7 @@ def copy_files(files, dest, force=False):
     if os.path.exists(dest) and not os.path.isdir(dest):
         raise Exception("ERROR io_utils:copy_files: dest exists "
                         "is not a dir! {}".format(dest))
-    if not os.path.exists(dest) and file_ext(dest):
+    if not os.path.exists(dest) and general_utils.file_ext(dest):
         raise Exception("\n\nERROR io_utils:copy_files: dest doesn't "
                         "exist, but has a file extension.\n"
                         "Dest for this function must be a directory"
@@ -367,7 +333,7 @@ def createPath(filepath, assume_dir=True):
         "d" will be a file with no extension,
         that will live in a/b/c)
         '''
-        if not assume_dir or file_ext(filepath):
+        if not assume_dir or general_utils.file_ext(filepath):
             path_to_create = os.path.dirname(filepath)
 
         # if this ends up being filepath's
@@ -378,25 +344,6 @@ def createPath(filepath, assume_dir=True):
         # or os.makedirs will fail
         os.makedirs(path_to_create, exist_ok=True)
         return True
-
-
-def file_ext(path):
-    """
-    return file extension from a path
-    :param str path: path to get file ext from
-    :return: str. the file extension (if file
-        has no extension, returns "")
-    :example:
-        file_ext("a.txt")
-            returns "txt"
-        file_ext("b")
-            returns ""
-    """
-    file_ext = os.path.splitext(path)[1]
-    # remove . char from extension
-    if file_ext:
-        return file_ext[1:]
-    return ""
 
 
 def get_file_as_str(filepath):

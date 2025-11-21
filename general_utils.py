@@ -3,6 +3,39 @@ import re
 import os
 
 
+def absolute(path, relTo):
+    """
+    Makes a filepath absolute, and normalizes path separators
+
+    :param str path: path to make absolute
+    :param str relTo: if path is relative, creates
+        the abs path relative to this path.
+    :return: str. the normalized, absolute path.
+    :example:
+        absolute("../b.txt", "C:\\Users\\Boris\\Desktop")
+        returns: "C:\\Users\\Boris\\b.txt"
+    """
+    if not path:
+        raise Exception("Path to convert to absolute is "
+                        "empty or None.\nPath: {}"
+                        .format(path))
+    if not os.path.isabs(path):
+        if not os.path.isabs(relTo):
+            raise Exception("This function takes a path, and "
+                            "if that path is not absolute, it "
+                            "forms the absolute value of that "
+                            "path relative some other path.\n"
+                            "Issue: Path passed was not absolute, "
+                            "but path to evaluate it from is "
+                            "not aboslute either!\n\n"
+                            "Path:\n{}\n\n"
+                            "Path to evaluate it relative from:\n{}"
+                            .format(path, relTo))
+        path = os.path.abspath(os.path.join(relTo, path))
+    # normpath normalizes in case Unix + Windows separators
+    return os.path.normpath(path)
+
+
 def escape_string(string):
     """escapes regex chars within a string"""
     newstr = ""
@@ -19,6 +52,25 @@ def get_filename(file_path, extension=True):
     if not extension:
         return os.path.splitext(basename)[0]
     return basename
+
+
+def file_ext(path):
+    """
+    return file extension from a path
+    :param str path: path to get file ext from
+    :return: str. the file extension (if file
+        has no extension, returns "")
+    :example:
+        file_ext("a.txt")
+            returns "txt"
+        file_ext("b")
+            returns ""
+    """
+    file_ext = os.path.splitext(path)[1]
+    # remove . char from extension
+    if file_ext:
+        return file_ext[1:]
+    return ""
 
 
 def is_regex_char(string):
