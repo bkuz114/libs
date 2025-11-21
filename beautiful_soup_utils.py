@@ -1,3 +1,8 @@
+"""
+Some useful utilities for using BeautiulSoup4 to
+manupulate HTML docs.
+"""
+
 import os
 import copy
 import re
