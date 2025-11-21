@@ -1,3 +1,5 @@
+""" Useful io operations """
+
 import os
 import sys
 import shutil
