@@ -5,11 +5,11 @@ and colors console output based on the log level.
 
 usage:
 
-    import utils.colorlogger as colorlogger
+    import colorlogger as colorlogger
     import logging
 
-    colorlogger.setup()
-    colorlogger.test()
+    colorlogger.setup(<OPTIONS>)
+
     logger = logging.getLogger(__name__)
     logger.debug("debug message")
     logger.info("info message")
