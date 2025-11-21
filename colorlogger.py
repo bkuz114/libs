@@ -1,4 +1,4 @@
-'''
+"""
 Sets up root logger of python's logging module
 so that it logs to console and a logfile,
 and colors console output based on the log level.
@@ -21,26 +21,24 @@ usage:
     function; depending on arguments given (or not
     given), you will not see all of the test messages
     in the 'usage' above.
-
-'''
+"""
 
 import sys
 import os
 import logging
-'''
-Need to import io_utils; it's in
-same dir as colorlogger, however,
-need to add their directory to
-path before "import io_utils".
-        Why:
-if another script is importing
-colorlogger and it's in a different
-directory than colorlogger, then
-'import io_utils' will fail as their
-dir is not in the running script's path.
-'''
+
+# Need to import io_utils; it's in
+# same dir as colorlogger, however,
+# need to add their directory to
+# path before "import io_utils".
+#        Why:
+# if another script is importing
+# colorlogger and it's in a different
+# directory than colorlogger, then
+# 'import io_utils' will fail as their
+# dir is not in the running script's path.
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-import io_utils
+import io_utils  # noqa: E402
 
 # some formats to use
 FORMAT_LOGFILE = "%(asctime)s:: %(levelname)s: %(message)s (%(filename)s:%(lineno)d)"
@@ -49,7 +47,6 @@ FORMAT_CONSOLE_HIGH = "%(levelname)s: %(message)s (%(filename)s:%(lineno)d)"
 
 
 class CustomFormatter(logging.Formatter):
-
     """
     custom logging Formatter to display log level msgs in
     different colors.
@@ -84,41 +81,41 @@ class CustomFormatter(logging.Formatter):
 
     FORMATS = {
         logging.DEBUG: green + FORMAT_CONSOLE_BASIC + reset,
-        #logging.INFO: blue + FORMAT_CONSOLE_BASIC + reset,
+        # logging.INFO: blue + FORMAT_CONSOLE_BASIC + reset,
         logging.INFO: FORMAT_CONSOLE_BASIC,
         logging.WARNING: yellow + FORMAT_CONSOLE_HIGH + reset,
         logging.ERROR: red + FORMAT_CONSOLE_HIGH + reset,
         logging.CRITICAL: bold_red + FORMAT_CONSOLE_HIGH + reset
     }
 
-    ''' 'colorinfo' arg determines if
-    logger.info lines will be colored,
-    for whichever handler you're using
-    this CustomFormatter with.
-
-    <handler>.setFormatter(CustomFormatter(True))
-        --> <handler>'s info msgs will be colored
-    <handler>.setFormatter(CustomFormatter())
-        --> <handler>'s info msgs wont be colored
-    <handler>.setFormatter(CustomFormatter(False))
-        --> <handler>'s info msgs wont be colored
-    '''
     def __init__(self, colorinfo=False):
+        """
+        initialize CustomerFormatter instance.
+
+        :param boolean colorinfo: if True, logger.info lines
+        will be colored for whichever handler you're using
+        this CustomFormatter with. e.g.:
+
+        <handler>.setFormatter(CustomFormatter(True))
+            --> <handler>'s info msgs will be colored
+        <handler>.setFormatter(CustomFormatter())
+            --> <handler>'s info msgs wont be colored
+        <handler>.setFormatter(CustomFormatter(False))
+            --> <handler>'s info msgs wont be colored
+        """
         if colorinfo:
             self.FORMATS[logging.INFO] = self.blue + FORMAT_CONSOLE_BASIC + self.reset
 
-    '''
-    If a log handler has their
-    formatter set to an instance
-    of this class, then any
-    logging from that handler will
-    be filtered through the "format"
-    function below: the statement
-    being logged will be passed to
-    format function; output of that
-    function is what gets printed.
-    '''
     def format(self, record):
+        """
+        Filters logs for any log handler that has
+        their formatter set to an instance of this class.
+        i.e. if you have:
+        <handler>.setFormatter(CustomerFormatter())
+        then anytime you log with <handler>, the string
+        being logged will pass through this function;
+        function output is what gets printed.
+        """
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
@@ -158,9 +155,7 @@ def setup(loglevel_console=logging.DEBUG,
         coming from where without having to prefix lines with data.
     """
 
-    '''
-    create handlers (console and logfile(s))
-    '''
+    # create handlers (console and logfile(s))
     handlers = []
 
     # write mode for log files
@@ -195,7 +190,7 @@ def setup(loglevel_console=logging.DEBUG,
         handlers.append(fh2)
 
     # set basic configuration for root logger
-    '''
+    """
     REGARDING SETTING THE LOG LEVEL FOR ROOT LOGGER::
 
     you MUST set root logger's level, and set it as low as possible.
@@ -210,20 +205,20 @@ def setup(loglevel_console=logging.DEBUG,
     so essentially, if you want to set individual log levels on handlers,
     make sure to set root logger's level and set it as low as possible.)
     https://stackoverflow.com/questions/17668633/what-is-the-point-of-setlevel-in-a-python-logging-handler
-    '''
+    """
     logging.basicConfig(
             level=logging.DEBUG,
-            #format='%(asctime)s,%(msecs)d %(levelname)s %(message)s (from file: %(name)s)',
+            # format='%(asctime)s,%(msecs)d %(levelname)s %(message)s (from file: %(name)s)',
             datefmt='%H:%M:%S',
             handlers=handlers
         )
 
     if not console and not logfile_color and not logfile_nocolor:
         # disable all logging
-        '''
+        """
         next line disables any messages
         from CRITICAL down, hence everything
-        '''
+        """
         logging.disable(logging.CRITICAL)
 
 
