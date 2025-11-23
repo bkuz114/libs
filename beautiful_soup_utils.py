@@ -14,11 +14,17 @@ from bs4 import BeautifulSoup, Comment
 ENC = 'utf-8-sig'
 
 FILENAME = os.path.basename(__file__)
-# str to prefix to HTML comments being added by this lib
+# common str to prefix to HTML comments being added by this lib
 # needed so that there's a way to remove all HTML comments
 # except internal ones
 COMMENT_PREFIX = " " + FILENAME + " "
-
+# define internal link + script tag comments
+# here (rather than in individual functions)
+# so that they can be imported in unit tests
+LINK_COMMENT_SUFFIX = "added this link tag"
+SCRIPT_COMMENT_SUFFIX = "added this script tag"
+LINK_COMMENT = COMMENT_PREFIX + LINK_COMMENT_SUFFIX
+SCRIPT_COMMENT = COMMENT_PREFIX + SCRIPT_COMMENT_SUFFIX
 
 def encapsulate_tag_text(soup, tag_search, tag_search_attrs, tag_add,
                          tag_add_attrs, use_nbsp=False):
@@ -381,7 +387,7 @@ def add_js_tags(soup, paths, add_to_head=True):
 
     for path in paths:
         script_tag = js_tag(path)
-        comment = Comment(COMMENT_PREFIX + "added this script tag")
+        comment = Comment(SCRIPT_COMMENT)
         script_tag.script.insert_before(comment)
         if add_to_head:
             soup.head.append(script_tag)
@@ -427,7 +433,7 @@ def add_css_head_tags(soup, paths, startAt=None):
     new_paths = BeautifulSoup("", 'html.parser')
     for path in paths:
         link_tag = css_tag(path)
-        comment = Comment(COMMENT_PREFIX + "added this link tag")
+        comment = Comment(LINK_COMMENT)
         link_tag.link.insert_before(comment)
         new_paths.append(link_tag)
 
