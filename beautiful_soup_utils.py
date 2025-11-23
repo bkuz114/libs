@@ -363,6 +363,20 @@ def add_js_tags(soup, paths, add_to_head=True):
             soup.body.append(script_tag)
 
 
+def get_css_head_tags(soup):
+    """
+    return <link> tags in <head>
+
+    :param BeautifulSoup4 soup: soup to get tags from
+    :returns: list<bs4.element.Tag> list of link tags
+    """
+    if not soup.head:
+        raise Exception(
+                "No <head> tag in soup (can't look for <link> tags)")
+    link_tags = soup.head.find_all("link")
+    return link_tags
+
+
 def add_css_head_tags(soup, paths, startAt=None):
     """
     add css tags to <head> of a BeautifulSoup object
@@ -383,10 +397,6 @@ def add_css_head_tags(soup, paths, startAt=None):
     :returns: None
     """
 
-    soup_head = soup.head
-    if not soup_head:
-        raise Exception("no 'head' tag in soup sent to add_css_head_tag")
-
     # make list of tags from list of paths
     new_paths = BeautifulSoup("", 'html.parser')
     for path in paths:
@@ -399,9 +409,9 @@ def add_css_head_tags(soup, paths, startAt=None):
     # paths after that; if there aren't any <link> tags
     # in <head>, append the new paths to end of <head>
 
-    link_tags = soup_head.find_all("link")
+    link_tags = get_css_head_tags(soup)
     if not link_tags:
-        soup_head.append(new_paths)
+        soup.head.append(new_paths)
     else:
         # default is insert after last <link> tag;
         # but if startAt arg given, insert after that point
