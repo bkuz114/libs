@@ -137,6 +137,32 @@ def get_prev_tag_sibling(soup_tag):
     return prev_sib
 
 
+def get_furthest_prev_comment_sibling(soup_tag):
+    """
+    search through left siblings of a tag,
+    and keep going until you hit a non-Comment.
+    returns the last comment found, or None if
+    there were no comments before the tag.
+    i.e.
+        <p>Stuff</p>
+        <!-- a comment -->
+        <!-- another -->
+        <p>Stuff2</p>
+    get_prev_comment_sibling for tag of <p>Stuff2</p>
+    will return tag for <!-- a comment -->
+    """
+    curr_tag = soup_tag
+    prev_sib = None
+    furthest_comment = None
+    while True:
+        prev_sib = curr_tag.previous_sibling
+        if not isinstance(prev_sib, bs4.element.Comment) or not prev_sib:
+            break
+        curr_tag = prev_sib
+        furthest_comment = prev_sib
+    return furthest_comment
+
+
 def add_classes(tag, class_list):
     """
     add css classes to a BeautifulSoup tag.
@@ -429,12 +455,28 @@ def add_css_head_tags(soup, paths, startAt=None):
                                 .format(str(startAt), str(len(link_tags)),
                                         str(len(link_tags)),
                                         str(len(link_tags))))
-            if startAt == len(link_tags):  # if they specified end of list, add at end of list
+            if startAt == len(link_tags):  # add after last <link>
                 link_tags[-1].insert_after(new_paths)
             else:  # anything else, start at that position.
-                link_tags[startAt].insert_before(new_paths)
+                # be mindful of comments for <link> tags;
+                # when inserting before a <link> tag, find
+                # comments prior to it and insert before those
+                # comments, NOT just before the <link> itself.
+                # e.g.: suppose startAt=1, 3 existing <link> tags,
+                # and all 3 have HTML comments preceeding;
+                # if you were to do: link_tags[1].insertBefore,
+                # will end up with:
+                #   - comment for link_tag[1]
+                #   - new tags
+                #   - link_tag[1]
+                furthest_comment = get_furthest_prev_comment_sibling(
+                        link_tags[startAt])
+                if not furthest_comment:  # no comments preceeding <link>
+                    link_tags[startAt].insert_before(new_paths)
+                else:  # insert before the comments preceeding <link>
+                    furthest_comment.insert_before(new_paths)
         else:
-            link_tags[-1].insert_after(new_paths)
+            link_tags[-1].insert_after(new_paths)  # add after last <link>
 
 
 def modify_path(path, rel):
