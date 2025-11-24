@@ -3,7 +3,7 @@ unit tests for beautiful_soup_utils.py
 
 run with pytest:
 
-    virtualenv tests && source ./tests/Scripts/activate && pip install -r requirements.txt
+    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
     pytest test_bs.py
 
     -- will run ALL functions prefixed with test_
@@ -11,12 +11,12 @@ run with pytest:
 
 run a specific test (example: run test_add_classes):
 
-    virtualenv tests && source ./tests/Scripts/activate && pip install -r requirements.txt
+    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
     pytest test_bs.py -k 'test_add_classes or test_add_css_head_tags or test_has_text_content'
 
 run multiple specific test (example: run test_add_classes, test_add_css_head_tags and test_has_text_content):
 
-    virtualenv tests && source ./tests/Scripts/activate && pip install -r requirements.txt
+    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
     pytest test_bs.py -k 'test_add_classes or test_add_css_head_tags or test_has_text_content'
 
 
@@ -31,7 +31,7 @@ Note: to include print statements on console output, add -s flag
 If do NOT want to run with pytest, can call with python, and it will
 run all functions prefixed with test_
 
-    virtualenv tests && source ./tests/Scripts/activate && pip install -r requirements.txt
+    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
     python test_bs.py
 """
 

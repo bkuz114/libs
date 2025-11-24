@@ -2,7 +2,7 @@
 Test for io_utils.py
 
 usage:
-    virtualenv tests && source ./tests/Scripts/activate && pip install -r requirements.txt
+    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
     pytest io_utils.py [-k 'TEST_A or TEST_B or ... TEST_N']
 
 Examples:
