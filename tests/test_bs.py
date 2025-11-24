@@ -1,38 +1,26 @@
 """
-unit tests for beautiful_soup_utils.py
+Unit tests for beautiful_soup_utils.py
 
-run with pytest:
-
+usage:
     virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
-    pytest test_bs.py
+    pytest io_bs.py [-k 'TEST_A or TEST_B or ... TEST_N']
 
-    -- will run ALL functions prefixed with test_
-    -- requirements.txt will install pytest
+Examples:
 
-run a specific test (example: run test_add_classes):
+    1. Run all tests
+        pytest test_bs.py
 
-    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
-    pytest test_bs.py -k 'test_add_classes or test_add_css_head_tags or test_has_text_content'
+    2. Run test_add_classes only
+        pytest test_bs.py -k 'test_add_classes'
 
-run multiple specific test (example: run test_add_classes, test_add_css_head_tags and test_has_text_content):
-
-    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
-    pytest test_bs.py -k 'test_add_classes or test_add_css_head_tags or test_has_text_content'
-
+    3. Run test_add_classes and test_find_replace only
+        pytest test_bs.py -k 'test_add_classes or test_find_replace'
 
 IMPORTANT:
     Use pytest rather than built in python unittest, as many
     assert list1 == list2, and I believe pytest has different
     functionality in determining list equality that unittest
     does not.
-
-Note: to include print statements on console output, add -s flag
-
-If do NOT want to run with pytest, can call with python, and it will
-run all functions prefixed with test_
-
-    virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
-    python test_bs.py
 """
 
 import inspect
