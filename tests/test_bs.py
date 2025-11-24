@@ -95,7 +95,7 @@ def test_find_replace():
     # replace a string with a tag
     search_for3 = "Goodbye"
     html_str = "<h1>stuff</h1>"
-    soup_tag = BeautifulSoup(html_str)
+    soup_tag = BeautifulSoup(html_str, 'html.parser')
     print("Replace " + search_for3 + " with a tag: " + str(soup_tag))
     beautiful_soup_utils.find_replace_str(soup, search_for3, soup_tag)
     print("after:\n\t" + str(soup))
