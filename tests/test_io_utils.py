@@ -1,36 +1,29 @@
-'''
+"""
 Test for io_utils.py
 
 usage:
-    python test_io_utils.py [--tests TESTS] [--all]
-
-    --tests
-        specify which tests to run
-        (valid : 1, 2, 3, 4, 5, 6, 7)
-        You can specify multiple tests as follows:
-        --tests 1 3 5
-
-    --all
-        run all tests
+    virtualenv tests && source ./tests/Scripts/activate && pip install -r requirements.txt
+    pytest io_utils.py [-k 'TEST_A or TEST_B or ... TEST_N']
 
 Examples:
 
-    python test_io_utils.py --tests 2
-        --> run test case 2
-    python test_io_utils.py --tests 5 1 3
-        --> run test cases 5, 1, and 3 (in that order)
-    python test_io_utils.py --all
-        --> run all test cases
-'''
+    1. Run all tests
+        pytest io_utils.py
+
+    2. Run test_1 only
+        pytest io_utils.py -k 'test_1'
+
+    3. Run test_1 and test_2 only
+        pytest io_utils.py -k 'test_1 or test_2'
+"""
 
 import sys
 import os
 import shutil
-import argparse
 from stat import S_IREAD, S_IRGRP, S_IROTH
-sys.path.append("..")
-import io_utils
 from pathlib import Path
+sys.path.append("..")
+import io_utils  # noqa: E402
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 a = os.path.abspath(os.path.join(SCRIPT_DIR, "a.txt"))
@@ -39,35 +32,19 @@ c = os.path.abspath(os.path.join(SCRIPT_DIR, "c.txt"))
 mydir = os.path.abspath(os.path.join(SCRIPT_DIR, "mydir"))
 
 
-def print_testcase(test_case_str, test_case_num):
-    print("\n\n ======== TEST # {} ========".format(test_case_num))
-    print("\n Description:\n\n" + test_case_str)
-    print("\n====================\n\n")
-
-
-def print_step(step_str):
-    print(step_str)
-
-
-def test_setup():
-    print("\n\n ------ TEST SETUP -----------")
-    # run test teardown, in case last test failed
-    print("\nFirst, call teardown, in case last test failed...")
-    test_teardown()
-
-    print("\nSetup: Touch files a.txt, b.txt, and c.txt in current directory")
+def setup_module():
+    print("\nTEST SETUP")
+    print("Touch files a.txt, b.txt, and c.txt in current directory")
     Path(a).touch()
     Path(b).touch()
     Path(c).touch()
-    print("\n\n -------- END TEST SETUP --------")
 
 
-def test_teardown():
-    print("\n\n ------- TEST TEARDOWN -----")
+def teardown_module():
+    print("\nTEST TEARDOWN")
     print("(1) Remove mydir if still exists")
     if os.path.exists(mydir) and os.path.isdir(mydir):
         io_utils.remove(mydir)
-        #shutil.rmtree(mydir)
 
     def rmfile(myfile):
         if os.path.exists(myfile) and os.path.isfile(myfile):
@@ -77,194 +54,174 @@ def test_teardown():
     rmfile(a)
     rmfile(b)
     rmfile(c)
-    print("\n\n -------- END TEST TEARDOWN ------")
 
 
-def main(args):
+def test_1():
+    print("Test function: 'copy_file'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Copy a, b, and c into mydir individually, "
+          "specifiying they are files")
 
-    valid_tests = ["1", "2", "3", "4", "5", "6", "7"]
-
-    parser = argparse.ArgumentParser(
-        description='Test cases for io_utils.py',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--tests', choices=valid_tests,
-                        default=[], nargs='+',
-                        help="Tests to run. Call as many i.e. --tests 3 5")
-    parser.add_argument('-a', '--all', default=False,
-                        action="store_true", help="Run all tests")
-    args = parser.parse_args(args)
-
-    test_list = args.tests
-    if args.all:
-        test_list = valid_tests
-
-    if not test_list:
-        raise Exception("\n\nDidn't select any tests!"
-                        "\nRun again with --tests or "
-                        "--all to run all tests")
-
-    # test setup
-    test_setup()
-
-    # run the tests
-    for test in test_list:
-        match test:
-            case "1":
-                testcase_1()
-            case "2":
-                testcase_2()
-            case "3":
-                testcase_3()
-            case "4":
-                testcase_4()
-            case "5":
-                testcase_5()
-            case "6":
-                testcase_6()
-            case "7":
-                testcase_7()
-
-    # test teardown
-    test_teardown()
-
-
-def testcase_1():
-    print_testcase("Test function: 'copy_file'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Copy a, b, and c into mydir individually, "
-                   "specifiying they are files", 1)
-
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Copy a, b, and c into mydir individually, "
-               "specifying they are files")
+    print("Copy a, b, and c into mydir individually, "
+          "specifying they are files")
     io_utils.copy_file(a, mydir)
     io_utils.copy_file(b, mydir)
     io_utils.copy_file(c, mydir)
+    assert os.path.exists(os.path.join(mydir, a))
+    assert os.path.exists(os.path.join(mydir, b))
+    assert os.path.exists(os.path.join(mydir, c))
 
-    print_step("Remove directory 'midir")
+    print("Remove directory 'midir")
     shutil.rmtree(mydir)
+    assert not os.path.isdir(mydir)
 
 
-def testcase_2():
-    print_testcase("Test function: 'copy_files'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Copy a, b, and c into mydir individually "
-                   "as a list of files", 2)
+def test_2():
+    print("Test function: 'copy_files'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Copy a, b, and c into mydir individually "
+          "as a list of files")
 
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Copy a, b, and c into mydir individually, "
-               "without specifying they are files")
+    print("Copy a, b, and c into mydir individually, "
+          "without specifying they are files")
     io_utils.copy_files([a, b, c], mydir)
+    assert os.path.exists(os.path.join(mydir, a))
+    assert os.path.exists(os.path.join(mydir, b))
+    assert os.path.exists(os.path.join(mydir, c))
 
-    print_step("Remove directory 'midir")
+    print("Remove directory 'midir")
     shutil.rmtree(mydir)
+    assert not os.path.isdir(mydir)
 
 
-def testcase_3():
-    print_testcase("Test function: 'copy_path'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Copy a, b, and c into mydir individually without "
-                   "specifying if they are dirs of files", 3)
+def test_3():
+    print("Test function: 'copy_path'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Copy a, b, and c into mydir individually without "
+          "specifying if they are dirs of files")
 
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     mydir = os.path.abspath(os.path.join(SCRIPT_DIR, "mydir"))
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Copy a, b, and c into mydir individually, "
-               "without specifying they are files")
-    io_utils.copy_files([a, b, c], mydir)
+    print("Copy a, b, and c into mydir individually, "
+          "without specifying they are files")
+    io_utils.copy_path(a, mydir)
+    io_utils.copy_path(b, mydir)
+    io_utils.copy_path(c, mydir)
+    assert os.path.exists(os.path.join(mydir, a))
+    assert os.path.exists(os.path.join(mydir, b))
+    assert os.path.exists(os.path.join(mydir, c))
 
-    print_step("Remove directory 'midir")
+    print("Remove directory 'midir")
     shutil.rmtree(mydir)
+    assert not os.path.isdir(mydir)
 
 
-def testcase_4():
-    print_testcase("Test function: 'copy_paths'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Copy a, b, and c into mydir as list of paths, without "
-                   "specifying if they are dirs of files", 4)
+def test_4():
+    print("Test function: 'copy_paths'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Copy a, b, and c into mydir as list of paths, without "
+          "specifying if they are dirs of files")
 
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     mydir = os.path.abspath(os.path.join(SCRIPT_DIR, "mydir"))
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Copy a, b, c as list of paths, "
-               "without specifying if they are files or dirs")
+    print("Copy a, b, c as list of paths, "
+          "without specifying if they are files or dirs")
     io_utils.copy_paths([a, b, c], mydir)
+    assert os.path.exists(os.path.join(mydir, a))
+    assert os.path.exists(os.path.join(mydir, b))
+    assert os.path.exists(os.path.join(mydir, c))
 
-    print_step("Remove directory 'midir")
+    print("Remove directory 'midir")
     shutil.rmtree(mydir)
+    assert not os.path.isdir(mydir)
 
 
-def testcase_5():
-    print_testcase("Test function: 'copy_file'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Copy a into mydir\n"
-                   "3. Try to copy a again, and see it fails\n"
-                   "4. Try to copy a again, this time with force=True, "
-                   "and see it succeeds", 5)
+def test_5():
+    print("Test function: 'copy_file'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Copy a into mydir\n"
+          "3. Try to copy a again, and see it fails\n"
+          "4. Try to copy a again, this time with force=True, "
+          "and see it succeeds")
 
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Copy a into mydir")
+    print("Copy a into mydir")
     io_utils.copy_file(a, mydir)
+    assert os.path.exists(os.path.join(mydir, a))
 
-    print_step("Copy a again, and make sure it fails")
+    print("Copy a again, and make sure it fails")
     try:
         io_utils.copy_file(a, mydir)
-        print("copy_file didn't fail!! I shouldn't be here!")
+        assert False
     except FileExistsError as e:
         print("copy_file failed, as expected. Error message:" + str(e))
 
-    print_step("Copy a again, but with force option")
+    print("Copy a again, but with force option")
     io_utils.copy_file(a, mydir, force=True)
+    assert os.path.exists(os.path.join(mydir, a))
 
-    print_step("Remove directory 'midir")
+    print("Remove directory 'midir")
     shutil.rmtree(mydir)
+    assert not os.path.isdir(mydir)
 
 
-def testcase_6():
-    print_testcase("Test functions: 'createPath' and 'remove'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Remove the directory "
-                   "and see it succeeds", 6)
+def test_6():
+    print("Test functions: 'createPath' and 'remove'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Remove the directory "
+          "and see it succeeds")
 
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Remove directory 'midir")
+    print("Remove directory 'midir")
     io_utils.remove(mydir)
+    assert not os.path.isdir(mydir)
 
 
-def testcase_7():
-    print_testcase("Test function: 'remove'\n"
-                   "1. Create directory mydir in current directory\n"
-                   "2. Make mydir readonly\n"
-                   "3. Try to remove with shutil and ensure failure\n"
-                   "4. Try to remove with 'remove' and ensure success,\n"
-                   "   even though it's read only", 7)
+def test_7():
+    print("Test function: 'remove'\n"
+          "1. Create directory mydir in current directory\n"
+          "2. Make mydir readonly\n"
+          "3. Try to remove with shutil and ensure failure\n"
+          "4. Try to remove with 'remove' and ensure success,\n"
+          "   even though it's read only")
 
-    print_step("Create 'mydir' in current dir")
+    print("Create 'mydir' in current dir")
     io_utils.createPath(mydir)
+    assert os.path.isdir(mydir)
 
-    print_step("Make 'mydir' readonly")
-    os.chmod(mydir, S_IREAD|S_IRGRP|S_IROTH)
+    print("Make 'mydir' readonly")
+    os.chmod(mydir, S_IREAD | S_IRGRP | S_IROTH)
 
-    print_step("Try to remove with shutil and make sure fails due to read only permissions")
+    print("Try to remove with shutil and make sure fails due "
+          "to read only permissions")
     try:
         shutil.rmtree(mydir)
-        print("shutil.rmtree didn't fail!! I shouldn't be here!")
+        assert False
     except PermissionError as e:
-        print("shutil.rmtree failed on permission error, as expected. Error message:" + str(e))
+        print("shutil.rmtree failed on permission error, as expected. "
+              "Error message:" + str(e))
 
-    print_step("Remove directory via 'remove' function; should succeed even with RO perms")
+    print("Remove directory via 'remove' function; "
+          "should succeed even with RO perms")
     io_utils.remove(mydir)
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
+    assert not os.path.isdir(mydir)
