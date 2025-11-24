@@ -28,7 +28,7 @@ import os
 import datetime
 import re
 from bs4 import BeautifulSoup
-sys.path.append("..")
+sys.path.append("../..")
 import beautiful_soup_utils  # noqa: E402
 
 # to create a timestampped output dir

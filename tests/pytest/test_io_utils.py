@@ -22,7 +22,7 @@ import os
 import shutil
 from stat import S_IREAD, S_IRGRP, S_IROTH
 from pathlib import Path
-sys.path.append("..")
+sys.path.append("../..")
 import io_utils  # noqa: E402
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))

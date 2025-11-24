@@ -1,7 +1,7 @@
 """ usage: python test_colorlogger.py """
 
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 import colorlogger as colorlogger  # noqa: E402
 import logging  # noqa: E402
 

@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append("..")
+sys.path.append("../..")
 import declension_utils as marker
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))

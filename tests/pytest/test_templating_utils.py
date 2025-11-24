@@ -18,7 +18,7 @@ Examples:
 """
 
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 import templating_utils  # noqa: E402
 
 inner_text1 = "these strings"
