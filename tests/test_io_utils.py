@@ -3,18 +3,18 @@ Test for io_utils.py
 
 usage:
     virtualenv venv && source ./venv/Scripts/activate && pip install -r requirements.txt
-    pytest io_utils.py [-k 'TEST_A or TEST_B or ... TEST_N']
+    pytest test_io_utils.py [-k 'TEST_A or TEST_B or ... TEST_N']
 
 Examples:
 
     1. Run all tests
-        pytest io_utils.py
+        pytest test_io_utils.py
 
     2. Run test_1 only
-        pytest io_utils.py -k 'test_1'
+        pytest test_io_utils.py -k 'test_1'
 
     3. Run test_1 and test_2 only
-        pytest io_utils.py -k 'test_1 or test_2'
+        pytest test_io_utils.py -k 'test_1 or test_2'
 """
 
 import sys
