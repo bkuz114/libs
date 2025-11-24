@@ -23,7 +23,6 @@ IMPORTANT:
     does not.
 """
 
-import inspect
 import sys
 import os
 import datetime
@@ -530,17 +529,3 @@ def test_write_collapse_ws_both():
     assert string_in_file(outfile, "</span><br/>")
     assert string_in_file(outfile, "</span></body>")
     assert not string_in_file(outfile, r'\s+<span>')  # should be no spaces before <span>
-
-
-def main(args):
-    # Get all functions in current file
-    functions_list = inspect.getmembers(
-            sys.modules['__main__'], inspect.isfunction)
-    # run the functions that begin with test_
-    for name, func in functions_list:
-        if name.startswith("test_"):
-            func()
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
