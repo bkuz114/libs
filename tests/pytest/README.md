@@ -26,13 +26,13 @@ This will install `pytest`, as well as any other pip modules required for unit t
 
 - Run a specific test within a specific test file:
 
-  `pytest FILENAME -k 'TESTNAME`
+  `pytest FILENAME -k 'TESTNAME'`
 
   This will run the function `TESTNAME` within the `.py` file `FILENAME`
 
 - Run a specific set of tests within specific test file:
 
-  `pytest FILENAME -k `TESTNAME1 or TESTNAME2 or .... TESTNAMEN`
+  `pytest FILENAME -k 'TESTNAME1 or TESTNAME2 or .... TESTNAMEN'`
 
   This would run the functions `TESTNAME1`, `TESTNAME2`, ... `TESTNAMEN` within the `.py` file `FILENAME`
 
