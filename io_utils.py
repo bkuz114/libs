@@ -5,6 +5,7 @@ import sys
 import shutil
 import stat
 import general_utils
+from pathlib import Path
 
 ENC = 'utf-8'
 
@@ -456,6 +457,34 @@ def remove(path, failIfNotExists=False):
 
     if os.path.exists(path):
         shutil.rmtree(path, onerror=make_dir_writable)
+
+
+def touch(filepath, exist_ok=False, overwrite_if_exists=False):
+    """
+    creates empty file on the file system.
+    optionally overrides if file exists.
+
+    :param string filepath: abs. path to file to create
+    :param boolean exist_ok: if True, then if filepath
+        exists, pass, but file mod time will be updated
+        (as per Path.touch)
+        Else, raises Exception unless overwrite_if_exists=True
+    :param boolean overwrite_if_exists: if True, then
+        if filepath exists, delete it prior to touch.
+    :return None
+    """
+    if not os.path.isabs(filepath):
+        raise Exception("touch filepath is not absolute "
+                        ": {}".format(filepath))
+    if os.path.exists(filepath):
+        if overwrite_if_exists:
+            os.remove(filepath)
+        elif not exist_ok:
+            raise FileExistsError(
+                    "touch file exists: {}"
+                    "\n(Can use option 'exist_ok')"
+                    .format(filepath))
+    Path(filepath).touch(exist_ok=exist_ok)
 
 
 def write_str_to_file(string, filepath, force):

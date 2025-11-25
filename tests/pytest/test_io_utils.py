@@ -15,11 +15,15 @@ Examples:
 
     3. Run test_1 and test_2 only
         pytest test_io_utils.py -k 'test_1 or test_2'
+
+    4. Run all the 'touch' tests
+        pytest test_io_utils.py -k 'test_touch'
 """
 
 import sys
 import os
 import shutil
+import time
 from stat import S_IREAD, S_IRGRP, S_IROTH
 from pathlib import Path
 sys.path.append("../..")
@@ -29,6 +33,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 a = os.path.abspath(os.path.join(SCRIPT_DIR, "a.txt"))
 b = os.path.abspath(os.path.join(SCRIPT_DIR, "b.txt"))
 c = os.path.abspath(os.path.join(SCRIPT_DIR, "c.txt"))
+d = os.path.abspath(os.path.join(SCRIPT_DIR, "d.txt"))
 mydir = os.path.abspath(os.path.join(SCRIPT_DIR, "mydir"))
 
 
@@ -225,3 +230,107 @@ def test_7():
           "should succeed even with RO perms")
     io_utils.remove(mydir)
     assert not os.path.isdir(mydir)
+
+
+def test_touch_1():
+    print("Test function: 'touch' (test 1)\n"
+          "1. Touch a file that doesn't exist\n"
+          "2. Confirm the file exists")
+
+    print("Touch file in current directory ({})".format(d))
+    if os.path.exists(d):
+        os.remove(d)
+    assert not os.path.exists(d)
+    io_utils.touch(d)
+
+    print("Ensure {} now exists".format(d))
+    assert os.path.exists(d)
+
+    print("Remove {} to prepare for future tests".format(d))
+    os.remove(d)
+    assert not os.path.exists(d)
+
+
+def test_touch_2():
+    print("Test function: 'touch' (test 2)\n"
+          "1. Touch a file that exists\n"
+          "2. Ensure touch files in absence of booleans")
+
+    print("Create file in current directory ({})".format(d))
+    Path(d).touch(exist_ok=True)
+    assert os.path.exists(d)
+
+    print("Try to touch {}, and ensure it fails".format(d))
+    try:
+        io_utils.touch(d, exist_ok=False, overwrite_if_exists=False)
+        assert False
+    except FileExistsError:
+        print("Success: 'touch' failed")
+        assert True
+
+    print("Remove {} to prepare for future tests".format(d))
+    os.remove(d)
+    assert not os.path.exists(d)
+
+
+def test_touch_3():
+    print("Test function: 'touch' (test 3)\n"
+          "1. Touch a file that exist, passing 'exist_ok=True'\n"
+          "2. Confirm that touch completed successfully,"
+          "   and that file modification time changed.")
+
+    print("Create file in current directory ({})".format(d))
+    Path(d).touch(exist_ok=True)
+    assert os.path.exists(d)
+
+    print("Get modificationt time of {}".format(d))
+    modification_time_start = Path(d).stat().st_mtime
+
+    print("(Sleep so mod time will change after touch)")
+    time.sleep(0.1)
+
+    print("Try to touch {}, passing exist_ok=True".format(d))
+    io_utils.touch(d, exist_ok=True)
+
+    print("Ensure modification time of file changed")
+    assert os.path.exists(d)
+
+    print("Get modificationt time of {}".format(d))
+    modification_time_after = Path(d).stat().st_mtime
+    assert modification_time_start != modification_time_after
+
+    print("Remove {} to prepare for future tests".format(d))
+    os.remove(d)
+    assert not os.path.exists(d)
+
+
+def test_touch_4():
+    print("Test function: 'touch' (test 4)\n"
+          "1. Touch a file that exist, passing 'overwrite_if_exists=True'\n"
+          "2. Confirm file overwritten with empty file")
+
+    print("Create a file with contents: ({})".format(d))
+    if os.path.exists(d):
+        os.remove(d)
+    file_content = "Add contents to file"
+    with open(d, "a") as f:
+        f.write(file_content)
+    assert os.path.exists(d)
+    content = None
+    with open(d) as f:
+        content = f.read()
+    assert content == file_content
+
+    print("Try to touch {}, passing overwrite_if_exists=True".format(d))
+    io_utils.touch(d, overwrite_if_exists=True)
+    assert os.path.exists(d)
+
+    print("Ensure {} now is empty".format(d))
+    content = None
+    with open(d) as f:
+        content = f.read()
+    assert content == ""
+
+    print("Remove {} to prepare for future tests".format(d))
+    os.remove(d)
+    assert not os.path.exists(d)
