@@ -64,36 +64,19 @@ def test_mark_sentence_1():
 
     print("\nTest 'mark_sentence' function")
 
-    # sentence will be "Ивана сын."
-
-    # delimeters to use
-    noun_delim_l = "["
-    noun_delim_r = "]"
-    decline_delim = "*"
-    # noun broken into base + declension
-    noun_start = "Иван"
-    noun_declension = "а"
-    # rest of sentence
-    rest_of_sentence = " сын."
     # the sentence to markup
-    sentence = "{}{}{}{}{}{}".format(
-            noun_delim_l, noun_start,
-            decline_delim, noun_declension,
-            noun_delim_r, rest_of_sentence)
+    sentence = "[Иван*а] сын."
     print("Original sentence:")
     print(sentence)
 
     # expected markup of sentence
-    expected = "<span>{}</span><span>{}</span>{}".format(
-            noun_start, noun_declension, rest_of_sentence)
+    expected = "<span>Иван</span><span>а</span> сын."
 
     print("Mark up the sentence by calling mark_sentence")
     # mark up the sentence
     marked = marker.mark_sentence(
             sentence,
-            noun_delim_l, noun_delim_r,
-            "[[", "]]",
-            decline_delim,
+            "[", "]", "[[", "]]", "*",
             False, False)
 
     print("Marked up sentence:")
@@ -106,38 +89,19 @@ def test_mark_sentence_2():
 
     print("\nTest 'mark_sentence' function, padding <span> with &nbsp;")
 
-    # sentence will be "Ивана сын."
-
-    # delimeters to use
-    noun_delim_l = "["
-    noun_delim_r = "]"
-    decline_delim = "*"
-    # noun broken into base + declension
-    noun_start = "Иван"
-    noun_declension = "а"
-    # rest of sentence
-    rest_of_sentence = " сын."
     # the sentence to markup
-    sentence = "{}{}{}{}{}{}".format(
-            noun_delim_l, noun_start,
-            decline_delim, noun_declension,
-            noun_delim_r, rest_of_sentence)
+    sentence = "[Иван*а] сын."
     print("Original sentence:")
     print(sentence)
 
     # expected markup of sentence
-    expected = "<span>{}</span><span>{}</span>{}".format(
-            noun_start, noun_declension, rest_of_sentence)
-    expected = expected.replace(" <span>", "&nbsp;<span>")
-    expected = expected.replace("</span> ", "</span>&nbsp;")
+    expected = "<span>Иван</span><span>а</span>&nbsp;сын."
 
     print("Mark up the sentence by calling mark_sentence")
     # mark up the sentence
     marked = marker.mark_sentence(
             sentence,
-            noun_delim_l, noun_delim_r,
-            "[[", "]]",
-            decline_delim,
+            "[", "]", "[[", "]]", "*",
             False, True)
 
     print("Marked up sentence:")
