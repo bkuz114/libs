@@ -30,14 +30,39 @@ import re
 from bs4 import BeautifulSoup
 sys.path.append("../..")
 import beautiful_soup_utils  # noqa: E402
+import io_utils  # noqa: E402
 
-# to create a timestampped output dir
-# (used by the test_write_ unit tests)
 script_dir = os.path.dirname(os.path.realpath(__file__))
-output_dir_base = os.path.join(script_dir, "output_test_bs")
 fmt = "%Y_%m_%d-%H_%M_%S"
 ct = datetime.datetime.now().strftime(fmt)
-OUTPUT_DIR = os.path.abspath(os.path.join(output_dir_base, ct))
+
+# be careful if you modify the output dir,
+# as this will be deleted during test teardown
+OUTPUT_DIR = os.path.join(script_dir, ct)  # BE CAREFUL IF MODIFYING (SEE ABOVE)
+
+
+def setup_module():
+    print("Create timestampped output dir")
+
+    if os.path.exists(OUTPUT_DIR):
+        raise Exception("Test output dir exists: {}\n"
+                        "Failing as will delete this dir "
+                        "during test teardown! (Did you "
+                        "change OUTPUT_DIR to an existing "
+                        "dir, rather than one that's uniquely"
+                        " timestampped?)".format(OUTPUT_DIR))
+
+    # ! IMPORTANT!
+    # fail if exists so don't remove by mistake during teardown
+    os.makedirs(OUTPUT_DIR, exist_ok=False)  # fail if exists!
+
+
+def teardown_module():
+    print("Remove timestampped output dir")
+    # note: use io_utils.remove rather than os.remove as
+    # os.remove gives win permission errors
+    # this dir should have only been created for this test
+    io_utils.remove(OUTPUT_DIR)
 
 
 def test_add_classes():
