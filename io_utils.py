@@ -1,7 +1,6 @@
 """ Useful io operations """
 
 import os
-import sys
 import shutil
 import stat
 import general_utils
@@ -30,11 +29,11 @@ def copy_file(src, dest, force=False, assume_dir=True):
         copies file a/b/c.txt to a/b/d.txt
     """
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise Exception("ERROR io_utils:copy_file: "
-                        "src or dest are not absolute")
+        raise ValueError("ERROR io_utils:copy_file: "
+                         "src or dest are not absolute")
     if not os.path.exists(src):
-        raise Exception("ERROR io_utils:copy_file: "
-                        "src file doesn't exist! src: {}".format(src))
+        raise FileNotFoundError("ERROR io_utils:copy_file: "
+                                "src file doesn't exist! src: {}".format(src))
     # fail if dest exists and isn't a dir
     if not force and os.path.exists(dest) and not os.path.isdir(dest):
         raise FileExistsError("ERROR io_utils:copy_file: dest to copy to, {}, "
@@ -74,13 +73,13 @@ def copy_files(files, dest, force=False):
     """
 
     if not os.path.isabs(dest):
-        raise Exception("ERROR io_utils:copy_files: dest dir "
-                        "is not absolute! {}".format(dest))
+        raise ValueError("ERROR io_utils:copy_files: dest dir "
+                         "is not absolute! {}".format(dest))
     if os.path.exists(dest) and not os.path.isdir(dest):
-        raise Exception("ERROR io_utils:copy_files: dest exists "
-                        "is not a dir! {}".format(dest))
+        raise NotADirectoryError("ERROR io_utils:copy_files: dest exists "
+                                 "is not a dir! {}".format(dest))
     if not os.path.exists(dest) and general_utils.file_ext(dest):
-        raise Exception("\n\nERROR io_utils:copy_files: dest doesn't "
+        raise Exception("ERROR io_utils:copy_files: dest doesn't "
                         "exist, but has a file extension.\n"
                         "Dest for this function must be a directory"
                         " (and then will copy all the files in 'files'"
@@ -114,9 +113,9 @@ def copy_folder_recursively(src, dest, explode=False, glob_ignore=[]):
     """
 
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        sys.exit("ERROR (io_utils:copy_folder_recursively): "
-                 "can't copy folder - either src or dest "
-                 "is not absolute!")
+        raise ValueError("ERROR (io_utils:copy_folder_recursively): "
+                         "can't copy folder - either src or dest "
+                         "is not absolute!")
 
     src_dir = src
     # need to get top level folder name to construct dest path
@@ -260,20 +259,21 @@ def copy_path(src, dest, force=False, explode=False, assume_dir=True,
         when copying src, dont files with extensions .txt or .fs
     """
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise Exception("ERROR io_utils:copy_path: "
-                        "src or dest are not absolute")
+        raise ValueError("ERROR io_utils:copy_path: "
+                         "src or dest are not absolute")
     if not os.path.exists(src):
-        raise Exception(("ERROR io_utils:copy_path: "
-                         "src to copy doesn't exist! src: {}").format(src))
+        raise FileNotFoundError(
+                "ERROR io_utils:copy_path: "
+                "src to copy doesn't exist! src: {}".format(src))
 
     if os.path.isdir(src):
         copy_folder_recursively(src, dest, explode, glob_ignore)
     elif os.path.isfile(src):
         copy_file(src, dest, force, assume_dir)
     else:
-        raise Exception(("ERROR io_utils:copy_path: "
-                         "src not file or dir according to python.. "
-                         "src: {}").format(src))
+        raise Exception("ERROR io_utils:copy_path: "
+                        "src not file or dir according to python.. "
+                        "src: {}".format(src))
 
 
 def copy_paths(paths, dest, force=False, explode=False, assume_dir=True,
@@ -310,10 +310,10 @@ def createPath(filepath, assume_dir=True):
     Note: if the filepath already exists, it simply returns.
     """
     if not os.path.isabs(filepath):
-        raise Exception("\n\nio_utils:createPath: trying to "
-                        "create directory path for {}, but "
-                        "it's not an absolute path"
-                        .format(filepath))
+        raise ValueError("io_utils:createPath: trying to "
+                         "create directory path for {}, but "
+                         "it's not an absolute path"
+                         .format(filepath))
 
     if os.path.exists(filepath):
         return True
@@ -355,11 +355,13 @@ def get_file_as_str(filepath):
     :param str filepath: abs path to a file
     """
     if not os.path.isabs(filepath):
-        sys.exit(("ERROR: (io_utils): can't read {}, "
-                  "path is not absolute!").format(filepath))
+        raise ValueError(
+                "ERROR: (io_utils): can't read {}, "
+                "path is not absolute!".format(filepath))
     if not os.path.exists(filepath):
-        sys.exit(("ERROR: (io_utils): Can't read {}; "
-                  "file does not exist!").format(filepath))
+        raise FileNotFoundError(
+                "ERROR: (io_utils): Can't read {}; "
+                "file does not exist!".format(filepath))
 
     file = open(filepath, "r", encoding=ENC)
     file_str = file.read()
@@ -436,9 +438,9 @@ def remove(path, failIfNotExists=False):
     """
 
     if not os.path.isabs(path):
-        raise Exception("Path to remove is not absolute {}".format(path))
+        raise ValueError("Path to remove is not absolute {}".format(path))
     if not os.path.exists(path) and failIfNotExists:
-        raise Exception("Path to remove does not exist {}".format(path))
+        raise FileNotFoundError("Path to remove doesn't exist {}".format(path))
 
     def make_dir_writable(function, path, exception):
         """The path on Windows cannot be gracefully removed due to
@@ -474,8 +476,8 @@ def touch(filepath, exist_ok=False, overwrite_if_exists=False):
     :return None
     """
     if not os.path.isabs(filepath):
-        raise Exception("touch filepath is not absolute "
-                        ": {}".format(filepath))
+        raise ValueError("touch filepath is not absolute "
+                         ": {}".format(filepath))
     if os.path.exists(filepath):
         if overwrite_if_exists:
             os.remove(filepath)
@@ -495,15 +497,16 @@ def write_str_to_file(string, filepath, force):
     :param boolean force: overwrite if filepath exists
     """
     if not os.path.isabs(filepath):
-        sys.exit(("ERROR: (io_utils:write_str_to_file) "
-                  "Output file not absolute! "
-                  "(Output file: {})").format(filepath))
+        raise ValueError("ERROR: (io_utils:write_str_to_file) "
+                         "Output file not absolute! "
+                         "(Output file: {})".format(filepath))
 
     if os.path.exists(filepath) and not force:
-        sys.exit(("ERROR (io_utils:write_str_to_file): Output "
-                  "file {} exists "
-                  "(your script should call this function with "
-                  "force=True)").format(filepath))
+        raise FileExistsError(
+                "ERROR (io_utils:write_str_to_file): Output "
+                "file {} exists "
+                "(your script should call this function with "
+                "force=True)".format(filepath))
     # create dirs in path if they don't exist
     basedir = os.path.dirname(filepath)
     if not os.path.exists(basedir):
