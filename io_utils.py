@@ -29,26 +29,24 @@ def copy_file(src, dest, force=False, assume_dir=True):
         copies file a/b/c.txt to a/b/d.txt
     """
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise ValueError("ERROR io_utils:copy_file: "
+        raise ValueError("io_utils:copy_file: "
                          "src or dest are not absolute")
     if not os.path.exists(src):
-        raise FileNotFoundError("ERROR io_utils:copy_file: "
+        raise FileNotFoundError("io_utils:copy_file: "
                                 "src file doesn't exist! src: {}".format(src))
     # fail if dest exists and isn't a dir
     if not force and os.path.exists(dest) and not os.path.isdir(dest):
-        raise FileExistsError("ERROR io_utils:copy_file: dest to copy to, {}, "
+        raise FileExistsError("io_utils:copy_file: dest to copy to, {}, "
                               "already exists (to copy and overwrite, rerun "
                               "with force=True))".format(dest))
     # fail if dest is a dir but it contains of a file called src
     src_filename = os.path.basename(src)
     if not force and os.path.isdir(dest) and \
             os.path.exists(os.path.abspath(os.path.join(dest, src_filename))):
-        raise FileExistsError("\n\nERROR (io_utils:copy_file)\n"
-                              "Trying to copy file:\n\t"
-                              "{}\nTo dest directory:\n\t{}\n"
-                              "dest already contains a file named {}!\n"
-                              "To overwrite the file, rerun with force=True"
-                              .format(src, dest, src_filename))
+        raise FileExistsError("io_utils:copy_file: Trying to copy file {} to "
+                              "dest dir {}, but it already contains a file by"
+                              " this name. To overwrite rerun with force=True"
+                              .format(src, dest))
 
     createPath(dest, assume_dir)
 
@@ -73,13 +71,13 @@ def copy_files(files, dest, force=False):
     """
 
     if not os.path.isabs(dest):
-        raise ValueError("ERROR io_utils:copy_files: dest dir "
+        raise ValueError("io_utils:copy_files: dest dir "
                          "is not absolute! {}".format(dest))
     if os.path.exists(dest) and not os.path.isdir(dest):
-        raise NotADirectoryError("ERROR io_utils:copy_files: dest exists "
+        raise NotADirectoryError("io_utils:copy_files: dest exists "
                                  "is not a dir! {}".format(dest))
     if not os.path.exists(dest) and general_utils.file_ext(dest):
-        raise Exception("ERROR io_utils:copy_files: dest doesn't "
+        raise Exception("io_utils:copy_files: dest doesn't "
                         "exist, but has a file extension.\n"
                         "Dest for this function must be a directory"
                         " (and then will copy all the files in 'files'"
@@ -113,7 +111,7 @@ def copy_folder_recursively(src, dest, explode=False, glob_ignore=[]):
     """
 
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise ValueError("ERROR (io_utils:copy_folder_recursively): "
+        raise ValueError("io_utils:copy_folder_recursively: "
                          "can't copy folder - either src or dest "
                          "is not absolute!")
 
@@ -259,11 +257,11 @@ def copy_path(src, dest, force=False, explode=False, assume_dir=True,
         when copying src, dont files with extensions .txt or .fs
     """
     if not os.path.isabs(src) or not os.path.isabs(dest):
-        raise ValueError("ERROR io_utils:copy_path: "
+        raise ValueError("io_utils:copy_path: "
                          "src or dest are not absolute")
     if not os.path.exists(src):
         raise FileNotFoundError(
-                "ERROR io_utils:copy_path: "
+                "io_utils:copy_path: "
                 "src to copy doesn't exist! src: {}".format(src))
 
     if os.path.isdir(src):
@@ -271,7 +269,7 @@ def copy_path(src, dest, force=False, explode=False, assume_dir=True,
     elif os.path.isfile(src):
         copy_file(src, dest, force, assume_dir)
     else:
-        raise Exception("ERROR io_utils:copy_path: "
+        raise Exception("io_utils:copy_path: "
                         "src not file or dir according to python.. "
                         "src: {}".format(src))
 
@@ -356,11 +354,11 @@ def get_file_as_str(filepath):
     """
     if not os.path.isabs(filepath):
         raise ValueError(
-                "ERROR: (io_utils): can't read {}, "
+                "io_utils:get_file_as_str: can't read {}, "
                 "path is not absolute!".format(filepath))
     if not os.path.exists(filepath):
         raise FileNotFoundError(
-                "ERROR: (io_utils): Can't read {}; "
+                "io_utils:get_file_as_str: Can't read {}; "
                 "file does not exist!".format(filepath))
 
     file = open(filepath, "r", encoding=ENC)
@@ -497,13 +495,13 @@ def write_str_to_file(string, filepath, force):
     :param boolean force: overwrite if filepath exists
     """
     if not os.path.isabs(filepath):
-        raise ValueError("ERROR: (io_utils:write_str_to_file) "
+        raise ValueError("io_utils:write_str_to_file: "
                          "Output file not absolute! "
                          "(Output file: {})".format(filepath))
 
     if os.path.exists(filepath) and not force:
         raise FileExistsError(
-                "ERROR (io_utils:write_str_to_file): Output "
+                "io_utils:write_str_to_file: Output "
                 "file {} exists "
                 "(your script should call this function with "
                 "force=True)".format(filepath))
