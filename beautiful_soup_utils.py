@@ -6,7 +6,7 @@ manupulate HTML docs.
 import os
 import copy
 import re
-import io_utils
+from pathlib import Path
 import bs4  # needed to typecheck objects i.e. bs4.element.Tag
 from bs4.dammit import EntitySubstitution  # for custom formatter for prettify
 from bs4 import BeautifulSoup, Comment
@@ -25,6 +25,47 @@ LINK_COMMENT_SUFFIX = "added this link tag"
 SCRIPT_COMMENT_SUFFIX = "added this script tag"
 LINK_COMMENT = COMMENT_PREFIX + LINK_COMMENT_SUFFIX
 SCRIPT_COMMENT = COMMENT_PREFIX + SCRIPT_COMMENT_SUFFIX
+
+
+def read_file(filepath: Path) -> str:
+    """
+    Reads and validates an input file and returns raw content.
+
+    Args:
+        filepath: Path to file.
+
+    Returns:
+        Raw text of file.
+
+    Raises:
+        FileNotFoundError: If filepath doesn't exist.
+    """
+    if not filepath.exists():
+        raise FileNotFoundError(f"Input file not found: {filepath}")
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def write_file(content: str, filepath: Path, force: bool = False) -> None:
+    """
+    Write a file to disk, checking for existing file and force flag.
+
+    Args:
+        content: Content to write.
+        filepath: Path to write file to. Creates parent dirs if they don't exist.
+        force: Whether to overwrite existing file.
+
+    Raises:
+        FileExistsError: If file exists and force is False.
+    """
+    if filepath.exists() and not force:
+        raise FileExistsError(f"{filepath} already exists. Use force to overwrite.")
+
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(content)
+
 
 def encapsulate_tag_text(soup, tag_search, tag_search_attrs, tag_add,
                          tag_add_attrs, use_nbsp=False):
@@ -635,7 +676,7 @@ def make_soup_from_file(filepath, log=True):
         raise Exception(
             ("ERROR (beautiful_soup_utils) filepath to get soup from does "
              "not exist {}").format(filepath))
-    file_str = io_utils.get_file_as_str(filepath)
+    file_str = read_file(Path(filepath))
     soup = make_soup(file_str)
     return soup
 
@@ -848,4 +889,4 @@ def write_soup_to_file(soup, output_filename, force, preserve_ru=False,
     pretty_soup = prettify_soup(soup, preserve_ru, preserve_nbsp,
                                 taglist, taglist_outer,
                                 remove_trailing_backslash)
-    io_utils.write_str_to_file(pretty_soup, output_filename, force)
+    write_file(pretty_soup, Path(output_filename), force)
